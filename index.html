@@ -2579,7 +2579,7 @@ html,body{margin:0;height:100%;background:#10160b;overflow:hidden;touch-action:n
 "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq" };</script>
 <script>
 /* 没有人类了！ v0.1.0 —— 单文件原生 JS + Canvas，无任何外部依赖 */
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 (() => {
   'use strict';
 
@@ -2625,10 +2625,10 @@ const VERSION = '0.1.0';
     },
     {
       id: 'fish', name: '大肥鱼', img: 'fish',
-      cost: 50, hp: 80, atk: 15, interval: 1.5, cooldown: 8, drawH: 110,
+      cost: 50, hp: 80, atk: 15, interval: 1.0, cooldown: 8, drawH: 110,
       proj: 'rice',                 // 远程：丢一碗米饭砸过去
       passiveId: 'ricemeal',
-      passive: { name: '饭来～', desc: '每 10 秒在头顶生成一碗米饭（15 米饭，吃「饭来」加成）；选了「吃白饭」后失效' }
+      passive: { name: '饭来～', desc: '每 10 秒在头顶生成一碗米饭（20 米饭，吃「饭来」加成）；选了「吃白饭」后失效' }
     },
     {
       id: 'frog', name: '奶蛙', img: 'naifrog',
@@ -2658,7 +2658,7 @@ const VERSION = '0.1.0';
     },
     {
       id: 'grok', name: 'Grok', img: 'grok',
-      cost: 150, hp: 200, atk: 80, interval: 3.0, cooldown: 8, drawH: 116,
+      cost: 225, hp: 200, atk: 80, interval: 3.0, cooldown: 8, drawH: 116,
       attack: 'melee', range: 110, hpScaleDmg: 0.40, rangeBonus: 1,
       passiveId: 'grow',
       passive: { name: '愈战愈勇', desc: '攻击距离 +1 格、自带 50% 吸血；伤害 = 生命上限的 40%；每击杀 1 只怪生命上限永久 +15' }
@@ -2723,16 +2723,16 @@ const VERSION = '0.1.0';
   // tier：blue=普通增益  purple=强力增益（独立乘区）  gold=角色特化
   const BUFFS = [
     {
-      id: 'hp', name: '生命强化', desc: '所有角色生命上限 +40', tier: 'blue', max: Infinity,
-      apply(mods) { mods.hpAdd += 40; }
+      id: 'hp', name: '生命强化', desc: '所有角色生命上限 +50', tier: 'blue', max: Infinity,
+      apply(mods) { mods.hpAdd += 50; }
     },
     {
-      id: 'atk', name: '攻击强化', desc: '所有角色攻击力 +10', tier: 'blue', max: Infinity,
-      apply(mods) { mods.atkAdd += 10; }
+      id: 'atk', name: '攻击强化', desc: '所有角色攻击力 +15', tier: 'blue', max: Infinity,
+      apply(mods) { mods.atkAdd += 15; }
     },
     {
-      id: 'sharp', name: '猛攻！！！', desc: '造成的伤害 +12%（独立乘区，可无限叠加）', tier: 'purple', max: Infinity,
-      apply(mods) { mods.dealt += 0.12; }
+      id: 'sharp', name: '猛攻！！！', desc: '造成的伤害 +15%（独立乘区，可无限叠加）', tier: 'purple', max: Infinity,
+      apply(mods) { mods.dealt += 0.15; }
     },
     {
       id: 'shield', name: '他出了一个名刀司命！', desc: '每个角色多 1 面旋转的蓝盾，可挡下一次任意伤害；每 5 秒回 1 面（最多叠 3 层）',
@@ -2752,7 +2752,7 @@ const VERSION = '0.1.0';
       }
     },
     {
-      id: 'bounce', name: '弹射', desc: 'Lv1：Claude 的猫爪不再消失，在屏幕里来回弹射 4 秒，基础攻击 +20。Lv2：每次命中额外在敌人所在格子爆炸，造成 50% 伤害（爆炸也能回血）',
+      id: 'bounce', name: '弹射', desc: 'Lv1：Claude 的猫爪不再消失，在屏幕里来回弹射 4 秒，基础攻击 +20；代价：Claude 布置花费 +25（75 → 100）。Lv2：每次命中额外在敌人所在格子爆炸，造成 50% 伤害（爆炸也能回血）',
       tier: 'gold', max: 2, owner: 'claude',
       apply(mods) {
         mods.bounce = Math.min(2, (mods.bounce || 0) + 1);
@@ -2760,12 +2760,12 @@ const VERSION = '0.1.0';
       }
     },
     {
-      id: 'atk2', name: '攻击强化Ⅱ', desc: '所有角色攻击力 +5%', tier: 'purple', max: Infinity,
-      apply(mods) { mods.atkMul *= 1.05; }
+      id: 'atk2', name: '攻击强化Ⅱ', desc: '所有角色攻击力 +15%', tier: 'purple', max: Infinity,
+      apply(mods) { mods.atkMul *= 1.15; }
     },
     {
-      id: 'hp2', name: '生命强化Ⅱ', desc: '所有角色生命上限 +5%', tier: 'purple', max: Infinity,
-      apply(mods) { mods.hp *= 1.05; }
+      id: 'hp2', name: '生命强化Ⅱ', desc: '所有角色生命上限 +15%', tier: 'purple', max: Infinity,
+      apply(mods) { mods.hp *= 1.15; }
     },
     {
       id: 'rate', name: '攻速', desc: '所有角色攻击速度 +5%', tier: 'blue', max: Infinity,
@@ -2776,14 +2776,22 @@ const VERSION = '0.1.0';
       apply(mods) { mods.dealt += 0.25; }
     },
     {
-      id: 'blade', name: '双刃剑', desc: '所有角色造成的伤害 +50%，但敌人造成的伤害也 +50%',
+      id: 'blade', name: '双刃剑', desc: '所有角色造成的伤害 +50%，但敌人造成的伤害也 +25%',
       tier: 'gold', max: Infinity,
-      apply(mods) { mods.dealt += 0.50; mods.enemyDealt += 0.50; }
+      apply(mods) { mods.dealt += 0.50; mods.enemyDealt += 0.25; }
     },
     {
-      id: 'glass', name: '玻璃大炮！', desc: '角色生命上限 -80%、受到伤害 +80%，但造成的伤害 +100%',
+      id: 'glass', name: '玻璃大炮！',
+      desc: '当前角色生命上限直接砍半（不套任何公式）；受到伤害 +100%、造成的伤害 +100%、攻击力 +100%、攻速 +50%、吸血 +100%',
       tier: 'gold', max: Infinity,
-      apply(mods) { mods.hp *= 0.2; mods.enemyDealt += 0.8; mods.dealt += 1.0; }
+      apply(mods) {
+        mods.glass = 1;
+        mods.enemyDealt += 1.0;
+        mods.dealt += 1.0;
+        mods.atkMul *= 2;
+        mods.rate *= 0.5;
+        mods.leech += 1.0;
+      }
     },
     {
       id: 'cdcut', name: '手速快一点', tier: 'purple', max: 5, owner: null,
@@ -2812,7 +2820,7 @@ const VERSION = '0.1.0';
     },
     {
       id: 'fishb', name: '吃白饭', tier: 'gold', max: 2, owner: 'fish',
-      desc: 'Lv1：饭来～失效；攻击 +20、攻击力 +10%、增伤 +8%，命中减速 15%（0.3 秒）。Lv2（再抽到一次）：攻击 +50、攻击力 +25%、增伤 +20%、减速 30%（0.8 秒），并且己方每次击杀 +5 米饭',
+      desc: 'Lv1：饭来～失效；攻击 +20、攻击力 +10%、增伤 +8%，命中减速 15%（0.3 秒）。Lv2（再抽到一次）：攻击 +50、攻击力 +25%、增伤 +20%、减速 30%（0.8 秒），并且己方每次击杀 +15 米饭',
       apply(mods) { mods.fishLvl = Math.min(2, (mods.fishLvl || 0) + 1); }
     },
     {
@@ -2836,12 +2844,18 @@ const VERSION = '0.1.0';
       }
     },
     {
-      id: 'vamp', name: '吸血鬼', desc: '角色造成伤害时回复该次伤害 5% 的生命，可无限叠加', tier: 'purple', max: Infinity,
-      apply(mods) { mods.leech += 0.05; }
+      id: 'vamp', name: '吸血鬼', desc: '角色造成伤害时回复该次伤害 15% 的生命，可无限叠加', tier: 'purple', max: Infinity,
+      apply(mods) { mods.leech += 0.15; }
     },
     {
-      id: 'crit', name: '暴暴暴！', desc: '暴击率 +5%（基础 5%，暴击造成 150% 伤害），可无限叠加', tier: 'blue', max: 20,
-      apply(mods) { mods.crit = (mods.crit || 0) + 0.05; }
+      id: 'crit', name: '暴暴暴！', desc: '暴击率 +10%（基础 10%，暴击造成 150% 伤害），最多叠 10 次', tier: 'blue', max: 10,
+      apply(mods) { mods.crit = (mods.crit || 0) + 0.10; }
+    },
+    {
+      id: 'fate', name: '交给命运', tier: 'purple', max: Infinity,
+      desc: '把身上所有强化全部重洗一遍：数量不变，每一项随机变成蓝 / 紫 / 金（三种品质各 1/3 概率）',
+      apply() { /* 真正的效果在 onPick 里做 */ },
+      onPick() { reshuffleBuffs(); }
     },
     {
       id: 'reroll', name: '下次一定！', desc: '每轮三选一的免费刷新次数 +1（基础 3 次）', tier: 'blue', max: Infinity,
@@ -3200,6 +3214,17 @@ const VERSION = '0.1.0';
   // ============================================================
   let S = null;
 
+  // 所有肉鸽加成的初始值（「交给命运」洗牌时会重置成这个）
+  function defaultMods() {
+    return {
+      dmg: 1, rate: 1, cost: 1, hp: 1, rice: 1, killRice: 0, pierce: 0, slow: 0,
+      atkAdd: 0, atkMul: 1, hpAdd: 0, dealt: 0, reduce: 0, zombieHpAdd: 0, catUp: false, glass: 0,
+      costCut: 0, miaoLvl: 0, bounce: 0, rerollMax: 0, gamble: 0,
+      enemyDealt: 0, fishLvl: 0, gptRoar: 0, pierceLaser: false, bookUp: false, riceVal: 0, leech: 0, crit: 0.10,
+      shieldMax: 0
+    };
+  }
+
   function newRun(owned) {
     const picked = (owned || []).slice(0, PICK_MAX);
     buffRects = [];
@@ -3228,13 +3253,8 @@ const VERSION = '0.1.0';
       dragPos: null,
       kills: 0,
       score: 0,
-      mods: {
-        dmg: 1, rate: 1, cost: 1, hp: 1, rice: 1, killRice: 0, pierce: 0, slow: 0,
-        atkAdd: 0, atkMul: 1, hpAdd: 0, dealt: 0, reduce: 0, zombieHpAdd: 0, catUp: false,
-        costCut: 0, miaoLvl: 0, bounce: 0, rerollMax: 0, gamble: 0,
-        enemyDealt: 0, fishLvl: 0, gptRoar: 0, pierceLaser: false, bookUp: false, riceVal: 0, leech: 0, crit: 0.05,
-        shieldMax: 0
-      },
+      mods: defaultMods(),
+      grokBonus: 0,
       buffCount: {},
       buffs: [],
       banner: null,
@@ -3274,6 +3294,13 @@ const VERSION = '0.1.0';
   // 一波 = 一条独立进度（可以同时有多条，点「下一波」就会并行）
   function startWave(n) {
     S.wave = Math.max(S.wave, n);
+    // 少带角色的补偿：每少 1 人，每波开始补 300 米饭
+    const missRole = Math.max(0, PICK_MAX - (S.owned || []).length);
+    if (missRole > 0) {
+      const bonus = missRole * 300;
+      S.rice += bonus;
+      S.texts.push({ x: W / 2, y: 150, text: '少带角色补贴 +' + bonus, life: 1.6, max: 1.6, color: '#ffd166' });
+    }
     S.phase = 'wave';
     if (!S.waves) S.waves = [];
     S.waves.push({
@@ -3531,6 +3558,35 @@ const VERSION = '0.1.0';
     SFX.shoot();
   }
 
+  // 「交给命运」：把所有强化推倒重来，数量不变，品质 1/3 均分
+  function reshuffleBuffs() {
+    const total = Object.keys(S.buffCount || {}).reduce((a, k) => a + S.buffCount[k], 0) || 1;
+    S.mods = defaultMods();
+    S.buffCount = {};
+    S.buffs = [];
+    const TIERS = ['blue', 'purple', 'gold'];
+    const usable = () => BUFFS.filter(b => b.id !== 'fate'
+      && (!b.owner || (S.owned || []).includes(b.owner))
+      && (S.buffCount[b.id] || 0) < b.max);
+    for (let i = 0; i < total; i++) {
+      let pool = [];
+      for (let k = 0; k < 12 && !pool.length; k++) {
+        const tier = TIERS[Math.floor(Math.random() * 3)];
+        pool = usable().filter(b => b.tier === tier);
+      }
+      if (!pool.length) pool = usable();
+      if (!pool.length) break;
+      const b = pool[Math.floor(Math.random() * pool.length)];
+      b.apply(S.mods);
+      S.buffCount[b.id] = (S.buffCount[b.id] || 0) + 1;
+      S.buffs.push(b.id);
+      if (b.onPick) b.onPick();
+    }
+    refreshPlants();
+    S.banner = { text: '命运重新洗牌！', life: 1.8, max: 1.8 };
+    SFX.pick();
+  }
+
   function chooseBuff(i) {
     const b = S.buffOptions[i];
     if (b && b.apply) {
@@ -3551,6 +3607,8 @@ const VERSION = '0.1.0';
   function plantStats(def) {
     const m = S.mods;
     let hp = def.hp * m.hp + m.hpAdd;
+    if (def.id === 'grok') hp += (S.grokBonus || 0);   // 愈战愈勇是全队共享的
+    if (m.glass) hp *= 0.5;
     let atk = (def.atk * m.dmg + m.atkAdd) * (m.atkMul || 1);
     let shots = 1;
     let interval = def.interval * m.rate;
@@ -4283,6 +4341,7 @@ const VERSION = '0.1.0';
   function plantCost(p) {
     let base = p.cost;
     if (p.id === 'minimax' && S.mods.wind3) base = 350;
+    if (p.id === 'claude' && S.mods.bounce) base += 25;   // 弹射：代价是布置更贵
     const raw = base * S.mods.cost - (p.id === 'cat' ? (S.mods.costCut || 0) : 0);
     return Math.max(5, Math.round(raw / 5) * 5);
   }
@@ -4494,8 +4553,13 @@ const VERSION = '0.1.0';
 
   // Grok 击杀：生命上限 +15；吃了「斧王托德…？」再吸 10% 最大生命的临时护盾（最多 3 层）
   function grokKill(p, victimMaxHp) {
-    p.maxHp += 15;
-    p.hp = Math.min(p.maxHp, p.hp + 15);
+    // 全局加成：任意一只 Grok 击杀，所有 Grok（含以后放的）都受益
+    S.grokBonus = (S.grokBonus || 0) + 15;
+    for (const q of S.plants) {
+      if (q.def.id !== 'grok') continue;
+      q.maxHp += 15;
+      q.hp = Math.min(q.maxHp, q.hp + 15);
+    }
     S.texts.push({ x: p.x, y: cellCenter(p.col, p.row).y - 92, text: '愈战愈勇 +15', life: 0.9, max: 0.9, color: '#8be36a' });
     if ((S.mods.grokLv || 0) >= 1) {
       const gain = Math.max(1, Math.round((victimMaxHp || 100) * 0.10));
@@ -4527,8 +4591,8 @@ const VERSION = '0.1.0';
     }
     // 吃白饭 Lv2：己方每次击杀 +5 米饭
     if ((S.mods.fishLvl || 0) >= 2) {
-      S.rice += 5;
-      S.texts.push({ x: z.x, y: cy - 78, text: '+5', life: 0.8, max: 0.8, color: '#ffe066' });
+      S.rice += 15;
+      S.texts.push({ x: z.x, y: cy - 78, text: '+15', life: 0.8, max: 0.8, color: '#ffe066' });
     }
     S.killer = null;
 
@@ -4549,15 +4613,14 @@ const VERSION = '0.1.0';
     }
 
     // 无限分裂：唐豆的分裂体也能再分裂，血量固定为初始本体的 50%
-    if (z.def && z.def.split) {
-      const base = z.splitBase || z.maxHp;
+    if (z.def && z.def.split && !z.noSplit) {
       const cw = z.def.split.chance + ((z.wave || 1) - 1) * 0.03;
-      if (Math.random() < Math.min(0.3, cw)) {
+      if (Math.random() < Math.min(0.5, cw)) {
         for (let k = 0; k < 2; k++) {
           const child = makeZombie(z.def, z.row, clamp(z.x + (k ? 24 : -24), 210, 1240));
-          child.maxHp = Math.max(1, Math.round(base * 0.5));
+          // 每分裂一代，血量再砍一半（50% → 25% → 12.5% …）
+          child.maxHp = Math.max(1, Math.round(z.maxHp * 0.5));
           child.hp = child.maxHp;
-          child.splitBase = base;
           S.splitQ.push(child);
         }
         S.texts.push({ x: z.x, y: cy - 62, text: '分裂！', life: 1.1, max: 1.1, color: '#ffd166' });
@@ -4618,6 +4681,15 @@ const VERSION = '0.1.0';
       const r = S.rices[i];
       if (r.y < r.ty) r.y = Math.min(r.ty, r.y + r.vy * dt);
       r.life -= dt;
+      if (r.y >= r.ty) {
+        r.landT = (r.landT || 0) + dt;
+        if (r.landT > 0.45) {          // 落地停一下自动收进碗里
+          S.rice += r.value;
+          S.texts.push({ x: r.x, y: r.y - 26, text: '+' + r.value, life: 0.7, max: 0.7, color: '#fff3c4' });
+          S.rices.splice(i, 1);
+          continue;
+        }
+      }
       if (r.life <= 0) S.rices.splice(i, 1);
     }
 
@@ -4669,7 +4741,7 @@ const VERSION = '0.1.0';
           const headY = Math.max(150, p.y - 40);
           S.rices.push({
             x: p.x, y: headY, ty: p.y + 34, vy: 46,
-            value: 15 + (S.mods.riceVal || 0),
+            value: 20 + (S.mods.riceVal || 0),
             life: CFG.riceLife, bob: rand(0, 6.28)
           });
           S.texts.push({ x: p.x, y: headY - 24, text: '饭来～', life: 0.9, max: 0.9, color: '#fff3c4' });
@@ -5076,6 +5148,7 @@ const VERSION = '0.1.0';
       for (const z of S.zombies) {
         if (z.row !== m.row || z.dead) continue;
         if (Math.abs(z.x - m.x) < 62) {
+          z.noSplit = true;      // 小推车属于秒杀，不该再分裂
           killZombie(z);
         }
       }
@@ -6120,7 +6193,7 @@ const VERSION = '0.1.0';
       ctx.fillStyle = 'rgba(20,30,10,.62)';
       roundRect(W / 2 - 258, GRID.y + GRID.h - 96, 516, 40, 20); ctx.fill();
       ctx.fillStyle = '#fff8e0';
-      ctx.fillText('点米饭收集 · 点卡槽再点草地放角色 · 铲子拖到角色身上铲除', W / 2, GRID.y + GRID.h - 76);
+      ctx.fillText('米饭会自动收集 · 点卡槽再点草地放角色 · 铲子拖到角色身上铲除', W / 2, GRID.y + GRID.h - 76);
       ctx.globalAlpha = 1;
     }
 
@@ -6157,7 +6230,7 @@ const VERSION = '0.1.0';
   //  十点五、开局选人
   // ============================================================
   const PICK_MAX = 6;
-  const PICK = { x: 52, y: 38, w: 1176, h: 648, cw: 344, ch: 186, gapX: 24, gapY: 14, cardY: 112 };
+  const PICK = { x: 52, y: 38, w: 1176, h: 648, cw: 344, ch: 186, gapX: 24, gapY: 14, cardY: 134 };
   let pickRects = [], pickStartRect = null, pickBuffBtnRect = null, pickBackRect = null, pickDetailBtnRects = [];
   let resumeRects = null;
 
@@ -6239,7 +6312,13 @@ const VERSION = '0.1.0';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#8a6b3e';
     ctx.font = font(700, 17);
-    ctx.fillText('最多选 ' + PICK_MAX + ' 个（选 1 个也可以直接开始）· 已选 ' + S.owned.length + ' / ' + PICK_MAX, W / 2, PICK.y + 88);
+    ctx.fillText('最多选 ' + PICK_MAX + ' 个（选 1 个也可以直接开始）· 已选 ' + S.owned.length + ' / ' + PICK_MAX, W / 2, PICK.y + 84);
+    const miss = Math.max(0, PICK_MAX - S.owned.length);
+    ctx.font = font(700, 15);
+    ctx.fillStyle = miss > 0 ? '#b3711f' : '#9c8a6e';
+    ctx.fillText(miss > 0
+      ? '少带 ' + miss + ' 个角色 → 每波开始额外补 ' + (miss * 300) + ' 米饭'
+      : '带满 ' + PICK_MAX + ' 个角色：没有额外米饭补贴', W / 2, PICK.y + 110);
     if (S.savedTip) {
       ctx.font = font(700, 15);
       ctx.fillStyle = '#4f8a2c';
