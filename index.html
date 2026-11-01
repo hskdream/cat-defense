@@ -2752,10 +2752,11 @@ const VERSION = '0.2.0';
     },
     {
       id: 'grok', name: 'Grok', img: 'grok',
-      cost: 175, hp: 250, atk: 80, interval: 3.0, cooldown: 8, drawH: 116,
+      // atk 只是占位（0）：Grok 不看基础攻击力，伤害一律 = 当前生命上限 × hpScaleDmg
+      cost: 175, hp: 250, atk: 0, interval: 3.0, cooldown: 8, drawH: 116,
       attack: 'melee', range: 110, hpScaleDmg: 0.30, rangeBonus: 1,
       passiveId: 'grow',
-      passive: { name: '愈战愈勇', desc: '攻击距离 +1 格、自带 10% 吸血；伤害 = 生命上限的 30%；每击杀 1 只怪回复自身生命上限 15% 的血' }
+      passive: { name: '愈战愈勇', desc: '攻击距离 +1 格、自带 10% 吸血；伤害 = 生命上限的 30%；每击杀 1 只怪物，本局所有 Grok 的生命上限 +15（永久累积；分裂体不算击杀）' }
     }
   ];
   // attack 字段：不填 = 扔猫耳朵（普通子弹）；'laser' = 贯穿本行的激光
@@ -3387,6 +3388,7 @@ const VERSION = '0.2.0';
       dragPos: null,
       kills: 0,
       score: 0,
+      grokBonus: 0,          // Grok「愈战愈勇」全队累积生命上限（分裂体击杀不计）
       mods: defaultMods(),
       buffCount: {},
       buffs: [],
@@ -3758,12 +3760,18 @@ const VERSION = '0.2.0';
     };
   }
 
+  // Grok 的「全队累积生命上限」：只有 Grok 吃，本局所有 Grok 共享同一份加成
+  const grokBonusOf = def => (def && def.id === 'grok') ? (S.grokBonus || 0) : 0;
+  // Grok 的伤害系数（写成百分数，UI 和逻辑共用一份）
+  const grokHitPct = def => Math.round((def && def.hpScaleDmg ? def.hpScaleDmg : 0.30) * 100);
+
   // 选完选项后把已有角色同步一遍（上限涨了就补上差额）
   function refreshPlants() {
     for (const p of S.plants) {
       const st = plantStats(p.def);
-      const gain = st.hp - p.maxHp;
-      p.maxHp = st.hp;
+      const target = st.hp + grokBonusOf(p.def);   // Grok 额外带上「愈战愈勇」累积上限
+      const gain = target - p.maxHp;
+      p.maxHp = target;
       if (gain > 0) p.hp = Math.min(p.maxHp, p.hp + gain);
       p.hp = Math.min(p.hp, p.maxHp);
       p.atk = st.atk;
@@ -4675,12 +4683,16 @@ const VERSION = '0.2.0';
     }
   }
 
-  // Grok 击杀：生命上限 +15（分裂体不算）；吃了「斧王托德…？」再吸 10% 最大生命的临时护盾（最多 3 层）
+  // Grok 击杀：本局所有 Grok 的生命上限 +15（分裂体不算击杀；上限只增不减、全队共享）
   function grokKill(p, victimMaxHp, isSplit) {
     if (!isSplit) {
-      p.maxHp += 15;
-      p.hp = Math.min(p.maxHp, p.hp + 15);
-      S.texts.push({ x: p.x, y: cellCenter(p.col, p.row).y - 92, text: '愈战愈勇 上限+15', life: 0.9, max: 0.9, color: '#8be36a' });
+      S.grokBonus = (S.grokBonus || 0) + 15;
+      for (const q of S.plants) {
+        if (!q.def || q.def.id !== 'grok') continue;
+        q.maxHp += 15;
+        q.hp = Math.min(q.maxHp, q.hp + 15);
+      }
+      S.texts.push({ x: p.x, y: cellCenter(p.col, p.row).y - 92, text: '愈战愈勇 全队上限+15', life: 0.9, max: 0.9, color: '#8be36a' });
     }
     if ((S.mods.grokLv || 0) >= 1) {
       const gain = Math.max(1, Math.round((victimMaxHp || 100) * 0.10));
@@ -4944,10 +4956,10 @@ const VERSION = '0.2.0';
             if (!tough) return;
             p.hp = Math.min(p.maxHp, p.hp + dmg * 1.0);   // 坚韧：100% 吸血
           };
-          // Grok：伤害 = 生命上限 × 40%，上限越高打得越狠
+          // Grok：伤害 = 当前生命上限 × hpScaleDmg（默认 30%），上限越高打得越狠
           const isGrok = p.def.id === 'grok';
           const dmgNow = isGrok
-            ? Math.max(1, Math.round(p.maxHp * 0.30))
+            ? Math.max(1, Math.round(p.maxHp * ((p.def.hpScaleDmg || 0.30))))
             : p.atk;
           for (const z of hitList) {
             const zHpMax = z.maxHp || z.hp;
@@ -6508,6 +6520,7 @@ const VERSION = '0.2.0';
 
       const tx = rc.x + 16 + Math.max(iw, 40) + 14;
       const st = plantStats(rc.p);
+      const shp = st.hp + grokBonusOf(rc.p);   // Grok 要把「愈战愈勇」的累积上限算进去
       const isMine = rc.p.attack === 'mine';
       ctx.textAlign = 'left';
       ctx.fillStyle = '#3f2a10';
@@ -6527,7 +6540,7 @@ const VERSION = '0.2.0';
           : rc.p.attack === 'wind'
           ? ['一吹清 1 排', '吹完即消失', '消耗 ' + (S.mods.wind3 ? 350 : 250) + ' 米']
           : rc.p.id === 'grok'
-          ? ['生命 ' + st.hp, '伤害 = 生命上限 40%', '消耗 ' + Math.round(rc.p.cost * S.mods.cost) + ' 米']
+          ? ['生命 ' + shp, '伤害 = 生命上限 ' + grokHitPct(rc.p) + '%', '消耗 ' + Math.round(rc.p.cost * S.mods.cost) + ' 米']
           : ['生命 ' + st.hp, '攻击 ' + st.atk, '间隔 ' + st.interval.toFixed(1) + 's', '消耗 ' + Math.round(rc.p.cost * S.mods.cost) + ' 米'])
         : (isMine
           ? ['生命 ' + st.hp, '挡伤害，死时炸一圈', '消耗 ' + Math.round(rc.p.cost * S.mods.cost) + ' 米饭']
@@ -6536,7 +6549,7 @@ const VERSION = '0.2.0';
           : rc.p.attack === 'wind'
           ? ['一次性，吹飞整排怪物', S.mods.wind3 ? '吹飞自身 + 上下各一排' : '只吹飞自身所在排', '消耗 ' + (S.mods.wind3 ? 350 : 250) + ' 米饭']
           : rc.p.id === 'grok'
-          ? ['生命 ' + st.hp + '　伤害 = 生命上限 40%', '间隔 ' + st.interval.toFixed(1) + 's　近战 2 格', '消耗 ' + Math.round(rc.p.cost * S.mods.cost) + ' 米饭']
+          ? ['生命 ' + shp + '　伤害 = 生命上限 ' + grokHitPct(rc.p) + '%', '间隔 ' + st.interval.toFixed(1) + 's　近战 2 格', '消耗 ' + Math.round(rc.p.cost * S.mods.cost) + ' 米饭']
           : ['生命 ' + st.hp + '　攻击 ' + st.atk, '间隔 ' + st.interval.toFixed(1) + 's　弹道 ' + st.shots, '消耗 ' + Math.round(rc.p.cost * S.mods.cost) + ' 米饭']);
       rows.forEach((t, k) => ctx.fillText(t, tx, rc.y + (narrow ? 56 : 60) + k * (narrow ? 20 : 23)));
 
@@ -6590,14 +6603,15 @@ const VERSION = '0.2.0';
     const tx = px + 300;
     ctx.textAlign = 'left';
     ctx.font = font(700, 18);
+    const grokHp = st.hp + grokBonusOf(p);
     const lines = [
-      ['生命上限', st.hp],
-      ['攻击力', p.id === 'grok' ? ('生命上限 × 40%（现在 ' + Math.round(st.hp * 0.4) + '）') : st.atk],
+      ['生命上限', grokHp],
+      ['攻击力', p.id === 'grok' ? ('生命上限 × ' + grokHitPct(p) + '%（现在 ' + Math.max(1, Math.round(grokHp * (p.hpScaleDmg || 0.30))) + '）') : st.atk],
       ['攻击间隔', st.interval.toFixed(2) + ' 秒'],
       ['弹道数量', st.shots],
       ['米饭消耗', Math.round(p.cost * S.mods.cost)],
       ['放置冷却', p.cooldown + ' 秒'],
-      ['攻击方式', p.id === 'grok' ? '近战（自身 + 身前 2 格，伤害 = 生命上限 40%）' : p.attack === 'laser' ? '激光（打最前一只）' : (p.attack === 'melee' ? (p.symmetric ? '近战（自身及左右各 1 格全部命中）' : '近战（' + (p.range || 120) + ' px 内全部命中）') : '远程弹道')]
+      ['攻击方式', p.id === 'grok' ? ('近战（自身 + 身前 2 格，伤害 = 生命上限 ' + grokHitPct(p) + '%）') : p.attack === 'laser' ? '激光（打最前一只）' : (p.attack === 'melee' ? (p.symmetric ? '近战（自身及左右各 1 格全部命中）' : '近战（' + (p.range || 120) + ' px 内全部命中）') : '远程弹道')]
     ];
     lines.forEach(([k, v], i) => {
       ctx.fillStyle = '#8a6b3e'; ctx.font = font(600, 16);
@@ -6710,8 +6724,9 @@ const VERSION = '0.2.0';
     S.cd[def.id] = plantCd(def);
     const c = cellCenter(col, row);
     const st = plantStats(def);
+    const bonusHp = grokBonusOf(def);
     S.plants.push({
-      col, row, x: c.x, y: c.y, hp: st.hp, maxHp: st.hp,
+      col, row, x: c.x, y: c.y, hp: st.hp + bonusHp, maxHp: st.hp + bonusHp,
       atk: st.atk, shots: st.shots, interval: st.interval,
       cd: 0.25, bob: rand(0, 6.28), flash: 0, def, uid: (S.uidSeq = (S.uidSeq || 1) + 1),
       shields: S.mods.shieldMax || 0, shieldT: SHIELD_CD
@@ -6997,6 +7012,7 @@ const VERSION = '0.2.0';
       readyT: S.readyT, prepT: S.prepT, kills: S.kills, t: S.t, best: S.best,
       score: S.score || 0, bestScore: S.bestScore || 0,
       mods: S.mods, buffCount: S.buffCount, buffs: S.buffs.slice(), goldMiss: S.goldMiss || 0,
+      grokBonus: S.grokBonus || 0,
       cd: S.cd, uidSeq: S.uidSeq || 1,
       spawned: S.spawned, spawnT: S.spawnT, spawnGap: S.spawnGap,
       waveTotal: S.waveTotal, clearT: S.clearT, bossAcc: S.bossAcc, riceT: S.riceT,
@@ -7051,6 +7067,7 @@ const VERSION = '0.2.0';
     S.mods = Object.assign(S.mods, d.mods || {});
     S.buffCount = d.buffCount || {};
     S.goldMiss = d.goldMiss || 0;
+    S.grokBonus = d.grokBonus || 0;
     S.buffs = d.buffs || [];
     S.cd = Object.assign(S.cd, d.cd || {});
     S.uidSeq = d.uidSeq || 1;
@@ -7113,7 +7130,9 @@ const VERSION = '0.2.0';
   window.__PVZ_STATE = () => S;
   window.__PVZ_CFG = { CFG, PLANTS, ZOMBIES, WAVE, BUFFS };
   window.__PVZ_DEBUG = {
-    hurtZombie, explodeMine, pawHit, gainRice, rerollMax, openBuff, chooseBuff, plantStats, refreshPlants, spawnZombie, startWave, buildBuffOptions, killZombie, makeZombie, damagePlant, pickZombieDef, beginRun, restartRun, slotDefs, saveGame, loadGame, saveAndExit, hasSave, clearSave };
+    hurtZombie, explodeMine, pawHit, gainRice, rerollMax, openBuff, chooseBuff, plantStats, refreshPlants, spawnZombie, startWave, buildBuffOptions, killZombie, makeZombie, damagePlant, pickZombieDef, beginRun, restartRun, slotDefs, saveGame, loadGame, saveAndExit, hasSave, clearSave,
+    tryPlace, grokKill, grokBonusOf, grokHitPct,
+    isReady: () => assetsReady };
   loadAssets(() => { musicStart(); });
   requestAnimationFrame(loop);
 })();
