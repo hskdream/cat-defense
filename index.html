@@ -2594,7 +2594,7 @@ const VERSION = '0.2.0';
 
   // 通用参数
   const CFG = {
-    startRice: 0,        // 开局米饭
+    startRice: 25,       // 开局米饭
     riceValue: 25,       // 一碗米饭的价值
     riceEvery: 5.0,      // 每隔几秒掉一碗米饭
     riceLife: 12,        // 米饭掉在地上多久消失
@@ -2658,10 +2658,10 @@ const VERSION = '0.2.0';
     },
     {
       id: 'grok', name: 'Grok', img: 'grok',
-      cost: 225, hp: 200, atk: 80, interval: 3.0, cooldown: 8, drawH: 116,
-      attack: 'melee', range: 110, hpScaleDmg: 0.40, rangeBonus: 1,
+      cost: 175, hp: 250, atk: 80, interval: 3.0, cooldown: 8, drawH: 116,
+      attack: 'melee', range: 110, hpScaleDmg: 0.30, rangeBonus: 1,
       passiveId: 'grow',
-      passive: { name: '愈战愈勇', desc: '攻击距离 +1 格、自带 50% 吸血；伤害 = 生命上限的 40%；每击杀 1 只怪生命上限永久 +15' }
+      passive: { name: '愈战愈勇', desc: '攻击距离 +1 格、自带 10% 吸血；伤害 = 生命上限的 30%；每击杀 1 只怪回复自身生命上限 15% 的血' }
     }
   ];
   // attack 字段：不填 = 扔猫耳朵（普通子弹）；'laser' = 贯穿本行的激光
@@ -3254,7 +3254,6 @@ const VERSION = '0.2.0';
       kills: 0,
       score: 0,
       mods: defaultMods(),
-      grokBonus: 0,
       buffCount: {},
       buffs: [],
       banner: null,
@@ -3294,13 +3293,6 @@ const VERSION = '0.2.0';
   // 一波 = 一条独立进度（可以同时有多条，点「下一波」就会并行）
   function startWave(n) {
     S.wave = Math.max(S.wave, n);
-    // 少带角色的补偿：每少 1 人，每波开始补 300 米饭
-    const missRole = Math.max(0, PICK_MAX - (S.owned || []).length);
-    if (missRole > 0) {
-      const bonus = missRole * 300;
-      S.rice += bonus;
-      S.texts.push({ x: W / 2, y: 150, text: '少带角色补贴 +' + bonus, life: 1.6, max: 1.6, color: '#ffd166' });
-    }
     S.phase = 'wave';
     if (!S.waves) S.waves = [];
     S.waves.push({
@@ -3607,7 +3599,6 @@ const VERSION = '0.2.0';
   function plantStats(def) {
     const m = S.mods;
     let hp = def.hp * m.hp + m.hpAdd;
-    if (def.id === 'grok') hp += (S.grokBonus || 0);   // 愈战愈勇是全队共享的
     if (m.glass) hp *= 0.5;
     let atk = (def.atk * m.dmg + m.atkAdd) * (m.atkMul || 1);
     let shots = 1;
@@ -4553,14 +4544,10 @@ const VERSION = '0.2.0';
 
   // Grok 击杀：生命上限 +15；吃了「斧王托德…？」再吸 10% 最大生命的临时护盾（最多 3 层）
   function grokKill(p, victimMaxHp) {
-    // 全局加成：任意一只 Grok 击杀，所有 Grok（含以后放的）都受益
-    S.grokBonus = (S.grokBonus || 0) + 15;
-    for (const q of S.plants) {
-      if (q.def.id !== 'grok') continue;
-      q.maxHp += 15;
-      q.hp = Math.min(q.maxHp, q.hp + 15);
-    }
-    S.texts.push({ x: p.x, y: cellCenter(p.col, p.row).y - 92, text: '愈战愈勇 +15', life: 0.9, max: 0.9, color: '#8be36a' });
+    // 击杀回血：回复自身生命上限的 15%
+    const heal = Math.max(1, Math.round(p.maxHp * 0.15));
+    p.hp = Math.min(p.maxHp, p.hp + heal);
+    S.texts.push({ x: p.x, y: cellCenter(p.col, p.row).y - 92, text: '愈战愈勇 +' + heal, life: 0.9, max: 0.9, color: '#8be36a' });
     if ((S.mods.grokLv || 0) >= 1) {
       const gain = Math.max(1, Math.round((victimMaxHp || 100) * 0.10));
       if ((p.tStack || 0) < 3) {
@@ -4615,12 +4602,13 @@ const VERSION = '0.2.0';
     // 无限分裂：唐豆的分裂体也能再分裂，血量固定为初始本体的 50%
     if (z.def && z.def.split && !z.noSplit) {
       const cw = z.def.split.chance + ((z.wave || 1) - 1) * 0.03;
-      if (Math.random() < Math.min(0.5, cw)) {
+      if (Math.random() < Math.min(0.25, cw)) {
+        const base = z.splitBase || z.maxHp;   // 分裂体的血量永远按「本体」算，不逐代衰减
         for (let k = 0; k < 2; k++) {
           const child = makeZombie(z.def, z.row, clamp(z.x + (k ? 24 : -24), 210, 1240));
-          // 每分裂一代，血量再砍一半（50% → 25% → 12.5% …）
-          child.maxHp = Math.max(1, Math.round(z.maxHp * 0.5));
+          child.maxHp = Math.max(1, Math.round(base * 0.5));
           child.hp = child.maxHp;
+          child.splitBase = base;
           S.splitQ.push(child);
         }
         S.texts.push({ x: z.x, y: cy - 62, text: '分裂！', life: 1.1, max: 1.1, color: '#ffd166' });
@@ -4824,14 +4812,14 @@ const VERSION = '0.2.0';
           // Grok：伤害 = 生命上限 × 40%，上限越高打得越狠
           const isGrok = p.def.id === 'grok';
           const dmgNow = isGrok
-            ? Math.max(1, Math.round(p.maxHp * 0.40))
+            ? Math.max(1, Math.round(p.maxHp * 0.30))
             : p.atk;
           for (const z of hitList) {
             const zHpMax = z.maxHp || z.hp;
             hurtZombie(z, dmgNow);
             z.flash = 0.18;
             suck(dmgNow);
-            if (isGrok) p.hp = Math.min(p.maxHp, p.hp + dmgNow * 0.5);   // Grok：50% 吸血
+            if (isGrok) p.hp = Math.min(p.maxHp, p.hp + dmgNow * 0.10);   // Grok：10% 吸血
             if (S.mods.slow) z.slowT = 1.5;
             if (z.hp <= 0) {
               S.killer = p.def.id;
@@ -6313,12 +6301,7 @@ const VERSION = '0.2.0';
     ctx.fillStyle = '#8a6b3e';
     ctx.font = font(700, 17);
     ctx.fillText('最多选 ' + PICK_MAX + ' 个（选 1 个也可以直接开始）· 已选 ' + S.owned.length + ' / ' + PICK_MAX, W / 2, PICK.y + 84);
-    const miss = Math.max(0, PICK_MAX - S.owned.length);
-    ctx.font = font(700, 15);
-    ctx.fillStyle = miss > 0 ? '#b3711f' : '#9c8a6e';
-    ctx.fillText(miss > 0
-      ? '少带 ' + miss + ' 个角色 → 每波开始额外补 ' + (miss * 300) + ' 米饭'
-      : '带满 ' + PICK_MAX + ' 个角色：没有额外米饭补贴', W / 2, PICK.y + 110);
+
     if (S.savedTip) {
       ctx.font = font(700, 15);
       ctx.fillStyle = '#4f8a2c';
