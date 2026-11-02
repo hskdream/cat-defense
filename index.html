@@ -4041,7 +4041,7 @@ html,body{margin:0;height:100%;background:#10160b;overflow:hidden;touch-action:n
 "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" };</script>
 <script>
 /* 没有人类了！ v0.1.0 —— 单文件原生 JS + Canvas，无任何外部依赖 */
-const VERSION = '0.4.6';
+const VERSION = '0.4.8';
 (() => {
   'use strict';
 
@@ -4265,7 +4265,7 @@ const VERSION = '0.4.6';
   // ---- 奶皇（究极 boss）：每 10 波一次，不进普通怪物池 ----
   const KING = {
     id: 'king', name: '奶皇', img: 'king', drawH: 420,
-    hp: 50000, hpStep: 50000,   // 第一次 5 万，之后每次再 +5 万（瘫痪时 5 排植物都能打它）
+    hp: 50000, hpStep: 50000,   // 第一次 5 万，之后每次翻倍 5万→10万→20万→40万（瘫痪时 5 排植物都能打它）
     col: 8,                     // 站在最右（被感染）的一列
     prep: 15,
     summon: 8,             // 召唤技能一次扔下的怪物数量                   // 出场前 15 秒准备
@@ -4326,8 +4326,8 @@ const VERSION = '0.4.6';
       apply(mods) { mods.dealt += 0.15; }
     },
     {
-      id: 'shield', name: '他出了一个名刀司命！', desc: '每个角色多 1 面旋转的蓝盾，可挡下一次任意伤害；每 5 秒回 1 面（最多叠 3 层）',
-      tier: 'purple', max: 3,
+      id: 'shield', name: '他出了一个名刀司命！', desc: '每个角色多 1 面旋转的蓝盾，可挡下一次任意伤害；每 5 秒把盾补回来',
+      tier: 'purple', max: 1,
       apply(mods) { mods.shieldMax = (mods.shieldMax || 0) + 1; }
     },
     {
@@ -5341,7 +5341,7 @@ const VERSION = '0.4.6';
 
   function spawnKing() {
     S.kingN = (S.kingN || 0) + 1;
-    const hp = KING.hp + (S.kingN - 1) * KING.hpStep;
+    const hp = KING.hp * Math.pow(2, S.kingN - 1);   // 每次出现血量翻倍
     const c = cellCenter(KING.col, 2);
     const z = {
       def: { id: 'king', name: KING.name, img: KING.img, drawH: KING.drawH, boss: true, noTarget: true, reduce: 0 },
