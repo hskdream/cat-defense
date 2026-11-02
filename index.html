@@ -4041,7 +4041,7 @@ html,body{margin:0;height:100%;background:#10160b;overflow:hidden;touch-action:n
 "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV" };</script>
 <script>
 /* 没有人类了！ v0.1.0 —— 单文件原生 JS + Canvas，无任何外部依赖 */
-const VERSION = '0.4.8';
+const VERSION = '0.4.9';
 (() => {
   'use strict';
 
@@ -7297,7 +7297,7 @@ const VERSION = '0.4.8';
       }
       if (sh.x > 1300) { S.shots.splice(i, 1); continue; }
       for (const z of S.zombies) {
-        if (z.row !== sh.row || z.hp <= 0) continue;
+        if (!zCoversRow(z, sh.row) || z.hp <= 0) continue;   // 奶皇挡 5 排、火球占 2 排
         if (sh.hitSet && sh.hitSet.has(z)) continue;
         if (sh.x >= z.x - 26 && sh.x <= z.x + 28) {
           hurtZombie(z, sh.dmg, sh.dealtAdd || 0, (sh.src != null ? S.plants.find(pp => pp.uid === sh.src) : null));
@@ -7356,8 +7356,8 @@ const VERSION = '0.4.8';
         if (z.king && z.invuln) continue;
         // 奶皇模型有 420 高，命中框按它的实际体型放大，不然猫爪会从身上穿过去
         const big = !!z.king;
-        const zy = cellCenter(0, z.row).y + (big ? 90 : -40);
-        const hw = big ? 96 : 34, hh = big ? 190 : 52;
+        const zy = cellCenter(0, z.row).y + (big ? -60 : -40);
+        const hw = big ? 96 : 34, hh = big ? 210 : 52;
         if (Math.abs(z.x - pw.x) < hw && Math.abs(zy - pw.y) < hh) pawHit(pw, z);
       }
       if (pw.life <= 0) S.paws.splice(i, 1);
@@ -7373,11 +7373,12 @@ const VERSION = '0.4.8';
 
     // 怪物
     for (const z of S.zombies) {
+      // 猫爪命中后的短暂免疫要在所有分支之前衰减，否则奶皇/火球这两个提前 continue 的分支会永远卡在 0.22
+      if (z.pawCd > 0) z.pawCd -= dt;
       if (z.fireball) { updateFireball(z, dt); continue; }
       if (z.king) { updateKing(z, dt); continue; }
       z.flash = Math.max(0, z.flash - dt);
       if (z.slowT > 0) z.slowT -= dt;
-      if (z.pawCd > 0) z.pawCd -= dt;
       if (z.fSlowT > 0) z.fSlowT -= dt;
       // 灼烧：3 秒内每秒跳 1 次（Lv2 每秒跳 2 次），重新命中只刷新时长、不叠加
       if (z.burn && z.burn.t > 0) {
