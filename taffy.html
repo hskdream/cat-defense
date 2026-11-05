@@ -2694,10 +2694,10 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       } else if (od === 'egg30') {
         P.money += 100;
         floats.push({ x: en.x, y: en.y - en.h - 16, text: '+100 奶蛋', t: 0, life: 1.2, gold: true });
-      } else if (en.def.eggDrop) {
-        drops.push({ x: en.x, y: en.y, t: 0, kind: 'egg', v: en.def.eggDrop });
-      } else if (en.def.dropEgg) {
-        drops.push({ x: en.x, y: en.y, t: 0, kind: 'egg', v: 20 });
+      } else if (en.def.dropEgg !== false && !en.def.clone && !en.def.bat && !en.def.crystal) {
+        // 统一掉落：精英 50、普通小怪 20
+        const v = en.def.eggDrop || (en.def.elite ? 50 : 20);
+        drops.push({ x: en.x, y: en.y, t: 0, kind: 'egg', v });
       }
       updateHUD();
     }
@@ -2793,12 +2793,12 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     mana: { name: '魔石', img: 'manastone', hp: 50, atk: 0, cd: 99999, speed: 0, range: 0, h: 54, r: 22, onDeath: 'mana' },
     regegg: { name: '奶蛋', img: 'naidan', hp: 50, atk: 0, cd: 99999, speed: 0, range: 0, h: 46, r: 20, onDeath: 'egg30' },
     milkbomb: { name: '奶包', img: 'milkbomb', hp: 100, atk: 50, cd: 2000, speed: 64, range: 58, h: 84, r: 28, bomb: true },
-    milkking: { name: '奶王', img: 'milkking', hp: 500, atk: 50, cd: 1400, speed: 40, range: 52, h: 152, r: 42, elite: true, eggDrop: 50 },
+    milkking: { name: '奶王', img: 'milkking', hp: 500, atk: 50, cd: 1400, speed: 40, range: 52, h: 152, r: 42, elite: true },
     icecrystal: { name: '冰晶', img: '', hp: 1000, atk: 0, cd: 99999, speed: 0, range: 0, h: 62, r: 26, crystal: true, dropEgg: false },
     bat: { name: '蝙蝠', img: '', hp: 250, atk: 20, cd: 900, speed: 120, range: 34, h: 34, r: 16, bat: true, dropEgg: false },
     fitness: {
       name: '健身龙', img: 'gym', hp: 500, atk: 50, cd: 1400, speed: 38, range: 60, h: 152, r: 40,
-      elite: true, fitnessAura: true, dropEgg: 60
+      elite: true, fitnessAura: true
     },
     gothbug: {
       name: '哥特龙', img: 'goth', hp: 100, atk: 25, cd: 1800, speed: 52, range: 250, h: 118, r: 32,
@@ -6195,7 +6195,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     fireZones = [];
     zyClone = null; zyBalls = []; zyBeams = null; zyWind = null; zyCores = []; zyThrown = []; zyCoreHits = 0;
     P.zyCores = 0; updateCoreBtn();
-    P.money += 300;
+    P.money += 1000;
     for (let i = 0; i < 26; i++) {
       fx.push({ kind: 'burst', x: boss.x + rnd(-34, 34), y: boss.y - rnd(6, 100), t: 0, life: rnd(0.4, 0.9) });
     }
@@ -6236,10 +6236,10 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     if (kind === 'elizabeth') { P.hasHeavy = true; toast('习得技能：重击 💥'); }
     if (kind === 'lief' && !P.hasLeaf) {
       P.hasLeaf = true;
-      toast(nm + '倒下了……你领悟了「生生不息」（+300 奶蛋）');
+      toast(nm + '倒下了……你领悟了「生生不息」（+1000 奶蛋）');
       updateHUD();
     } else {
-      toast(nm + '倒下了……传送门开启（+300 奶蛋）');
+      toast(nm + '倒下了……传送门开启（+1000 奶蛋）');
     }
   }
 
