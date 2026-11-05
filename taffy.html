@@ -2913,12 +2913,6 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     const n = Math.min(waveCap(room) - alive, room.total - room.spawned);
     if (n <= 0) return;
     for (let i = 0; i < n; i++) {
-      let tries = 0, x = 0, y = 0;
-      do {
-        const a = rnd(0, TAU), d = rnd(80, Math.min(room.w, room.h) * 0.42);
-        x = cxp + Math.cos(a) * d; y = cyp + Math.sin(a) * d;
-        tries++;
-      } while (tries < 40 && (World.isBlocked(x, y, 16) || dist(x, y, P.x, P.y) < 90));
       // 每刷 10 只小怪，第 10 只换成精英「奶王」（第二大关及以后）
       eliteAcc++;
       let type;
@@ -2928,6 +2922,15 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
         const pool = ['turtle', 'fish', 'milkbomb', 'turtle', 'fish', 'gothbug'];
         type = pool[Math.floor(Math.random() * pool.length)];
       }
+      // 按这只怪的实际体型找落点，别直接塞进墙里
+      const rr = ((EDEF[type] || EDEF.turtle).r || 24) + 4;
+      let tries = 0, x = 0, y = 0;
+      do {
+        const a = rnd(0, TAU), d = rnd(80, Math.min(room.w, room.h) * 0.42);
+        x = cxp + Math.cos(a) * d; y = cyp + Math.sin(a) * d;
+        tries++;
+      } while (tries < 60 && (World.isBlocked(x, y, rr) || dist(x, y, P.x, P.y) < 90));
+      if (World.isBlocked(x, y, rr)) { x = cxp; y = cyp; }
       spawnEnemy(type, x, y, room);
       fx.push({ kind: 'spawn', x: x, y: y, t: 0, life: 0.5 });
     }
@@ -3103,7 +3106,24 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       if (!e.alive) continue;
       if (e.spawnT > 0) e.spawnT -= dt;
       if (e.flash > 0) e.flash -= dt;
-      if (e.kt > 0) { e.kt -= dt; e.x += e.kx * dt; e.y += e.ky * dt; continue; }
+      if (e.kt > 0) {
+        e.kt -= dt;
+        const kx = e.x + e.kx * dt, ky = e.y + e.ky * dt;
+        if (!World.isBlocked(kx, e.y, e.r * 0.8)) e.x = kx; else e.kx = 0;
+        if (!World.isBlocked(e.x, ky, e.r * 0.8)) e.y = ky; else e.ky = 0;
+        if (e.kx === 0 && e.ky === 0) e.kt = 0;
+        continue;
+      }
+      // 安全网：万一被推到墙里/墙外，每帧朝房间中心挪一点，别卡住
+      if (!e.def.crystal && !e.isZyClone && World.isBlocked(e.x, e.y, e.r * 0.8)) {
+        const rm = World.state.rooms[e.room] || null;
+        const tx = rm ? rm.x + rm.w / 2 : e.x, ty = rm ? rm.y + rm.h / 2 : e.y;
+        const aa = Math.atan2(ty - e.y, tx - e.x);
+        const step = Math.max(60, e.speed) * dt;
+        const nx2 = e.x + Math.cos(aa) * step, ny2 = e.y + Math.sin(aa) * step;
+        if (!World.isBlocked(nx2, ny2, e.r * 0.8)) { e.x = nx2; e.y = ny2; }
+        else { e.x = tx; e.y = ty; }
+      }
       if (e.stunUntil && now() < e.stunUntil) continue;   // 被重击砸晕
       if (e.def.crystal) { e.spin = (e.spin || 0) + dt * 1.6; continue; }   // 冰晶站桩，不打人也不动
       if (e.isZyClone) {
