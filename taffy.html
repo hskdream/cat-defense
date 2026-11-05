@@ -26,11 +26,10 @@ canvas#game{position:absolute;inset:0;width:100%;height:100%;display:block;}
   mix-blend-mode:multiply;}
 .hidden{display:none!important;}
 
-/* ---------- 强制横屏：竖屏时整体旋转 90° ---------- */
-@media (orientation:portrait){
-  #app{inset:auto;left:50%;top:50%;width:100vh;height:100vw;
-    transform:translate(-50%,-50%) rotate(90deg);}
-}
+/* ---------- 强制横屏：由 JS 设置尺寸并旋转 90°（见 resize()） ---------- */
+#app{touch-action:none;}
+#app.rotated{inset:auto;left:50%;top:50%;transform-origin:center center;
+  transform:translate(-50%,-50%) rotate(90deg);}
 
 /* ---------------- 标题画面 ---------------- */
 #title{position:absolute;inset:0;overflow:hidden;}
@@ -1873,8 +1872,24 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
 
   function resize() {
     const app = $('#app');
-    const w = (app && app.clientWidth) || window.innerWidth;
-    const h = (app && app.clientHeight) || window.innerHeight;
+    const iw = window.innerWidth, ih = window.innerHeight;
+    // 竖屏（或可视区偏窄）时把整个 #app 旋转 90°，用像素尺寸而不是 vh/vw，
+    // 避免微信/移动浏览器地址栏导致 100vh ≠ 实际可视高度、进而点不准。
+    const portrait = ih > iw;
+    ROT = portrait ? 90 : 0;
+    let w = iw, h = ih;
+    if (app) {
+      if (portrait) {
+        w = ih; h = iw;
+        app.classList.add('rotated');
+        app.style.width = w + 'px';
+        app.style.height = h + 'px';
+      } else {
+        app.classList.remove('rotated');
+        app.style.width = iw + 'px';
+        app.style.height = ih + 'px';
+      }
+    }
     W = w; H = h;
     DPR = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.max(1, Math.floor(w * DPR));
@@ -1882,7 +1897,6 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
     zoom = clamp(Math.min(w / 760, h / 520), 0.6, 1.9);
-    ROT = (window.innerHeight > window.innerWidth) ? 90 : 0;
     if (typeof applyLayout === 'function') applyLayout();
   }
   resize();
@@ -2160,10 +2174,12 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   // 屏幕坐标 -> 逻辑坐标（处理强制横屏旋转）
   function toLogical(clientX, clientY) {
     if (!ROT) return { x: clientX, y: clientY };
-    const app = $('#app');
-    const r = app.getBoundingClientRect();
-    // 竖屏时 #app 被 rotate(90deg)：屏幕 (x,y) → 逻辑 (y, H - x)
-    return { x: clientY - r.top, y: (r.width || H) - (clientX - r.left) };
+    // #app 固定在可视区正中并 rotate(90deg)，中心点就是视口中心（比 getBoundingClientRect
+    // 更可靠：旋转后的 bbox 在部分 WebView 里尺寸会反过来）。
+    const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    const dx = clientX - cx, dy = clientY - cy;
+    // 屏幕偏移 (dx,dy) 反向转 90° → 逻辑偏移 (dy, -dx)
+    return { x: W / 2 + dy, y: H / 2 - dx };
   }
 
   // 屏幕位移 → 逻辑位移（竖屏整体旋转 90° 时两轴互换）
@@ -7699,14 +7715,26 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     const t = $('#title');
     const menu = $('#menu') || document.querySelector('.menu');
     if (menu) {
-      menu.addEventListener('click', (e) => {
+      let lastTap = 0;
+      const runMenu = (e) => {
         const item = e.target.closest ? e.target.closest('[data-menu]') : null;
         if (!item) return;
+        const t = now();
+        if (t - lastTap < 320) return;      // 防止 click + touchend 双触发
+        lastTap = t;
         const act = item.getAttribute('data-menu');
         if (act === 'new') startNewGame();
         else if (act === 'cont') { if (loadSave()) { $('#title').classList.add('hidden'); } else toast('没有存档'); }
         else if (act === 'set' || act === 'settings') openSettingsTitle();
-      });
+      };
+      menu.addEventListener('click', runMenu);
+      // 兼容：部分微信/老 WebView 只有 touch 事件
+      menu.addEventListener('touchend', (e) => {
+        const item = e.target.closest ? e.target.closest('[data-menu]') : null;
+        if (!item) return;
+        if (e.cancelable) e.preventDefault();
+        runMenu(e);
+      }, { passive: false });
     }
     const dlgTap = $('#dlgTap');
     if (dlgTap) dlgTap.addEventListener('pointerdown', (e) => { e.preventDefault(); tapDialog(); });
