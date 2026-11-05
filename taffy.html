@@ -202,9 +202,18 @@ canvas#game{position:absolute;inset:0;width:100%;height:100%;display:block;}
 /* ---------------- 面板 ---------------- */
 .panel{position:absolute;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;
   background:rgba(3,2,6,.72);backdrop-filter:blur(4px);padding:12px;animation:dlgIn .2s ease both;}
-.panel-box{width:min(560px,94vw);max-height:92vh;overflow:auto;padding:clamp(14px,2.4vh,24px);
+.panel-box{width:min(560px,94vw);max-height:88%;display:flex;flex-direction:column;position:relative;
+  padding:clamp(14px,2.4vh,24px);
   background:linear-gradient(180deg,rgba(20,14,22,.98),rgba(8,6,10,.99));
   border:1px solid rgba(255,158,203,.28);border-radius:6px;box-shadow:0 30px 80px rgba(0,0,0,.75);}
+/* 面板右上角常驻关闭键：内容再长也能退出 */
+.panel-x{position:absolute;top:6px;right:8px;width:34px;height:34px;line-height:1;font-size:16px;
+  color:#f3dbe6;background:rgba(255,255,255,.06);border:1px solid rgba(255,158,203,.32);
+  border-radius:50%;cursor:pointer;z-index:3;}
+.panel-x:active{background:rgba(226,80,143,.3);}
+/* 长列表自己滚，标题和底部按钮固定 */
+.panel-box>.inv-list{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;}
+.panel-box>.btn-row{flex:none;margin-top:10px;}
 .panel-title{font-family:var(--serif);font-size:clamp(16px,2.2vw,20px);letter-spacing:.24em;color:var(--pink-soft);
   text-align:center;margin:0 0 4px;}
 .panel-sub{text-align:center;font-size:11px;letter-spacing:.16em;color:rgba(240,225,232,.4);margin:0 0 14px;}
@@ -574,6 +583,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   <div id="shopPanel" class="panel hidden">
     <div class="panel-box">
       <h2 class="panel-title">奶 龙 商 店</h2>
+      <button class="panel-x" id="shopX">✕</button>
       <p class="panel-sub">用奶蛋换取力量</p>
       <div class="shop-money"><img src="data:image/webp;base64,UklGRsQDAABXRUJQVlA4WAoAAAAQAAAAWQAAXgAAQUxQSIcBAAABkEPbtqlnN7btpMNv27ZtdrZt27Zt20Zp28Y7VfDWeW3GiIgJMDkxu7q7O5JLkW4bbty+fW5Oz0IOkzT6lCUZWie7RDlH3NT3ksW7dZ2i9nPJxsPJjtBfsvdFZX1eayS7P9XQ5rJDsv9LdWVjxc7P+VQNEntvRSuq+Ncm2agn4I7Y3lbNfLH/eaKSJkJcryPwNsKqqWKYMI9piH4BseoqGCbULTzPe5gfBXGtLIwsp7leFe7TSFiJXyDpCpsp5E0slwOorzGofIL+3xHVmCXLUQdhp91I52GSn3SBVhmU7z2tJqil0FuA2uB2gdrjToA64Y6DOuKOgdrgjoAa4XqDQu/TaoHMFVoZ0nbYTV9SVdg6Q457wWqIMotRjwJZhf+Qhhj4GtDTMFrKG04fgx+COevGMxsgL1KNwqCTiJ/VjcqQY4BvDY1S9xmWXU9KGr0NHtqzMdZoDh38KNusw5WN9pDWGx/8y9rXS5OKGUf0z9W689IdO3ZsP7J7x44d2we0rxpnclQGAFZQOCAWAgAA8A0AnQEqWgBfAD5tMpNGpCMhoSq2qwCADYlAGq15fjvA9ew24vmAx2wcrB7MdDIJr5EutYwXhGPm71kuS0+gc+OxD1Zb0SeYMsFTYeqqhCF8lI9gAitd+cN94QbH3kcZTQFcvEziDwMP9jE1XUtkZW5HtCAvwcQAAP782OAD9beXu/Agc/I1oyo6VxPNu8dR8QH8rkIeXhpI5/Mbtoh6+s4AsYkyZsZtd87oyQNkfKXinYk6E9QheH9j9tfn9OnEBr+4NpynrNPpS5XLvL6yefDJ9lBW3j3bx0Z9nd8MlQgMPqPr8BYmmswn9DdDa133xKPjkw9A1jbYj2mCIZaVx4jiVYKzUq3r++yKrex0DEERizECTkxS8I1dx72A4OonsUnUR0ZxFaPZBCPEqVT6mzTMBzn0VsImg0x36wD9fZZNZnah+k8ohRD1hpbrVRANV20MgMDZJB5UaS1FvbMzuifEBWqbOa2eWdWQCtxu1ivrS0ugYhmBh8lG6YmFdj6D/1Qh0lqUiqmInEG/LZQRx5wph8qi1d7p1tif4v/nVfLZ3odihzIDTAmmMBdY+2WRMLbs9iSCH1dYkzXfgOoKvemHJNG1zkEPgwNssqqX38jtlcZsOUmUw5LRTffModD9oCMyg2w6Bp/eaNDH/IJXPcYiXU7m/gn4r4e//2DuRGOsHIma5noWcchxiCZdz3gMkzzWYAAA" alt=""><span id="shopMoney">0</span></div>
       <div class="inv-list" id="shopList"></div>
@@ -586,6 +596,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   <div id="shopAllPanel" class="panel hidden">
     <div class="panel-box">
       <h2 class="panel-title">商 品 图 鉴</h2>
+      <button class="panel-x" id="shopAllX">✕</button>
       <p class="panel-sub">奶龙商店可能出现的全部商品</p>
       <div class="inv-list" id="shopAllList"></div>
       <div class="btn-row"><button class="btn" id="shopAllClose">返 回</button></div>
@@ -595,6 +606,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   <div id="gymPanel" class="panel hidden">
     <div class="panel-box">
       <h2 class="panel-title">角 色 升 级</h2>
+      <button class="panel-x" id="gymX">✕</button>
       <p class="panel-sub">健身龙：练起来就不会输</p>
       <div class="shop-money"><img src="data:image/webp;base64,UklGRsQDAABXRUJQVlA4WAoAAAAQAAAAWQAAXgAAQUxQSIcBAAABkEPbtqlnN7btpMNv27ZtdrZt27Zt20Zp28Y7VfDWeW3GiIgJMDkxu7q7O5JLkW4bbty+fW5Oz0IOkzT6lCUZWie7RDlH3NT3ksW7dZ2i9nPJxsPJjtBfsvdFZX1eayS7P9XQ5rJDsv9LdWVjxc7P+VQNEntvRSuq+Ncm2agn4I7Y3lbNfLH/eaKSJkJcryPwNsKqqWKYMI9piH4BseoqGCbULTzPe5gfBXGtLIwsp7leFe7TSFiJXyDpCpsp5E0slwOorzGofIL+3xHVmCXLUQdhp91I52GSn3SBVhmU7z2tJqil0FuA2uB2gdrjToA64Y6DOuKOgdrgjoAa4XqDQu/TaoHMFVoZ0nbYTV9SVdg6Q457wWqIMotRjwJZhf+Qhhj4GtDTMFrKG04fgx+COevGMxsgL1KNwqCTiJ/VjcqQY4BvDY1S9xmWXU9KGr0NHtqzMdZoDh38KNusw5WN9pDWGx/8y9rXS5OKGUf0z9W689IdO3ZsP7J7x44d2we0rxpnclQGAFZQOCAWAgAA8A0AnQEqWgBfAD5tMpNGpCMhoSq2qwCADYlAGq15fjvA9ew24vmAx2wcrB7MdDIJr5EutYwXhGPm71kuS0+gc+OxD1Zb0SeYMsFTYeqqhCF8lI9gAitd+cN94QbH3kcZTQFcvEziDwMP9jE1XUtkZW5HtCAvwcQAAP782OAD9beXu/Agc/I1oyo6VxPNu8dR8QH8rkIeXhpI5/Mbtoh6+s4AsYkyZsZtd87oyQNkfKXinYk6E9QheH9j9tfn9OnEBr+4NpynrNPpS5XLvL6yefDJ9lBW3j3bx0Z9nd8MlQgMPqPr8BYmmswn9DdDa133xKPjkw9A1jbYj2mCIZaVx4jiVYKzUq3r++yKrex0DEERizECTkxS8I1dx72A4OonsUnUR0ZxFaPZBCPEqVT6mzTMBzn0VsImg0x36wD9fZZNZnah+k8ohRD1hpbrVRANV20MgMDZJB5UaS1FvbMzuifEBWqbOa2eWdWQCtxu1ivrS0ugYhmBh8lG6YmFdj6D/1Qh0lqUiqmInEG/LZQRx5wph8qi1d7p1tif4v/nVfLZ3odihzIDTAmmMBdY+2WRMLbs9iSCH1dYkzXfgOoKvemHJNG1zkEPgwNssqqX38jtlcZsOUmUw5LRTffModD9oCMyg2w6Bp/eaNDH/IJXPcYiXU7m/gn4r4e//2DuRGOsHIma5noWcchxiCZdz3gMkzzWYAAA" alt=""><span id="gymMoney">0</span></div>
       <div class="up-body">
@@ -2136,6 +2148,20 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
 
   function keyDown(e) {
     if (e.code === cfg.keys.pause || e.code === 'Escape') {
+      // 有面板开着时先关面板，别让它盖住游戏又关不掉
+      if (e.code === 'Escape' && modalOpen()) {
+        const openIds = ['#shopAllPanel', '#shopPanel', '#gymPanel', '#upPanel', '#classModal', '#statPanel'];
+        for (const sel of openIds) {
+          const el = $(sel);
+          if (el && !el.classList.contains('hidden')) {
+            if (sel === '#classModal' && typeof closeClassModal === 'function') closeClassModal();
+            else if (sel === '#gymPanel' && typeof closeGym === 'function') closeGym();
+            else { hideModal(sel); paused = false; }
+            e.preventDefault();
+            return;
+          }
+        }
+      }
       if (mode === 'dungeon' || mode === 'village') { togglePause(); e.preventDefault(); return; }
     }
     keys[e.code] = true;
@@ -7760,6 +7786,23 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     if (shopAllBtn) shopAllBtn.addEventListener('click', openShopAll);
     const shopAllClose = $('#shopAllClose');
     if (shopAllClose) shopAllClose.addEventListener('click', () => hideModal('#shopAllPanel'));
+    // 右上角常驻关闭键 + 点背景关闭，杜绝"列表太长退不出去"
+    const shopAllX = $('#shopAllX');
+    if (shopAllX) shopAllX.addEventListener('click', () => hideModal('#shopAllPanel'));
+    const shopX = $('#shopX');
+    if (shopX) shopX.addEventListener('click', () => { hideModal('#shopPanel'); paused = false; });
+    const gymX = $('#gymX');
+    if (gymX) gymX.addEventListener('click', () => { if (typeof closeGym === 'function') closeGym(); });
+    ['#shopPanel', '#shopAllPanel', '#gymPanel', '#upPanel', '#classModal'].forEach((sel) => {
+      const el = $(sel);
+      if (!el) return;
+      el.addEventListener('click', (e) => {
+        if (e.target !== el) return;            // 只认点在遮罩空白处
+        if (sel === '#gymPanel') { if (typeof closeGym === 'function') closeGym(); return; }
+        if (sel === '#classModal') { if (typeof closeClassModal === 'function') closeClassModal(); return; }
+        hideModal(sel); paused = false;
+      });
+    });
     // 暂停菜单
     const pauseList = $('#pauseList');
     if (pauseList) {
