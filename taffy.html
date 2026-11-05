@@ -490,6 +490,9 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
           <div class="class-desc">追踪魔弹<br>伤害 10 · 冷却 3 秒<br>每发消耗 10 MP</div>
         </div>
       </div>
+      <div style="margin-top:16px;text-align:center">
+        <button class="btn ghost" id="classClose">返 回（保持当前职业）</button>
+      </div>
     </div>
   </div>
 
@@ -3511,7 +3514,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       ], () => {
         showChoice('奶龙歪了歪头。', [
           { text: '① 我没意见', cb: () => {} },
-          { text: '② 我有意见', cb: () => openClassModal('reselect') }
+          { text: '② 我有意见', cb: () => openClassModal('village') }
         ]);
       });
     } else {
@@ -3755,7 +3758,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     const first = !prog().taftiMet;
     const go = () => {
       prog().taftiMet = true; saveCfg();
-      openClassModal('reselect');
+      openClassModal('tafti');
     };
     if (first) {
       playLines([
@@ -4150,8 +4153,23 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     ], () => openClassModal('first'));
   }
 
+  let classModalKind = 'first';
+  function closeClassModal(reopen) {
+    hideModal('#classModal');
+    paused = false;
+    if (!reopen && classModalKind === 'first') {
+      // 开局不做选择就退出：留在标题/村庄流程里，不卡死
+      mode = 'village';
+      P.cls = P.cls || 'knight';
+      if (!P.weapon) P.weapon = Object.assign({}, WEAPONS[CLASSES[P.cls].weapon]);
+      recalcStats();
+      updateHUD();
+    }
+  }
+
   function openClassModal(kind) {
     paused = true;
+    classModalKind = kind;
     const cards = document.querySelectorAll('.class-card');
     for (let i = 0; i < cards.length; i++) {
       const card = cards[i];
@@ -4159,11 +4177,13 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       card.classList.remove('sel');
       card.onclick = () => pickClass(k, kind);
     }
+    const closeBtn = $('#classClose');
+    if (closeBtn) closeBtn.onclick = () => closeClassModal();
     showModal('#classModal');
   }
 
   function pickClass(k, kind) {
-    if (kind === 'reselect') {
+    if (kind === 'tafti') {
       if (P.money < 50) { toast('需要 50 奶蛋才能换职业'); return; }
       P.money -= 50;
     }
@@ -4172,7 +4192,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     recalcStats();
     P.hp = Math.min(P.hp, P.maxHp);
     P.mp = Math.min(P.mp, P.maxMp);
-    hideModal('#classModal');
+    closeClassModal(true);
     updateHUD();
     if (kind === 'first') {
       paused = false;
@@ -7899,7 +7919,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     setShopKeyForTest(v) { shopKey = v; }, get waveReduce() { return waveReduceOf(lvIndex()); },
     get gymNpc() { return gymNpc; }, get hunNpc() { return hunNpc; }, get mageNpc() { return mageNpc; },
     get tangNpc() { return tangNpc; }, get tangStage() { return tangStage; }, talkTang, tangPlay,
-    get taftiNpc() { return taftiNpc; }, talkTafti, openClassModal, pickClass,
+    get taftiNpc() { return taftiNpc; }, talkTafti, openClassModal, pickClass, closeClassModal,
     get fireZones() { return fireZones; }, get rootZones() { return rootZones; }, get vines() { return vines; },
     startCharge, breakCharge, fireSmash, doLeaf, layoutOf, setLayout, applyLayout, BOSS_DEFS,
     doWind, updateWindFields, doHeavy, updateHeavy, curAtk, atkValue, finalDmg, boarDmg, boarBlast, BUFFS, rollOffers, beginSkillAim, moveSkillAim, endSkillAim, get skillAim() { return skillAim; },
