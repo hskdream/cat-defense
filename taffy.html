@@ -460,6 +460,11 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
 #windBtn .tk-txt,#heavyBtn .tk-txt{font-size:10px;color:#eaf6ff;text-shadow:0 1px 3px #000}
 #windBtn .cd,#heavyBtn .cd{position:absolute;font-size:14px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000}
 
+/* 版本号：用来一眼确认当前跑的是哪一版（排查缓存用） */
+.game-ver{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);
+  font-size:12px;letter-spacing:2px;color:rgba(255,220,235,.72);
+  text-shadow:0 2px 6px rgba(0,0,0,.8);font-weight:600;pointer-events:none}
+
 </style>
 </head>
 <body>
@@ -475,6 +480,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     <div class="title-wrap">
       <h1 class="game-title">塔菲历险记</h1>
       <p class="game-sub">TAFI'S ADVENTURE</p>
+      <p class="game-ver" id="gameVer">v0.4.7</p>
       <nav class="menu" id="menu">
         <button class="menu-item" data-menu="new"><span class="cursor">✦</span>新游戏</button>
         <button class="menu-item" data-menu="cont"><span class="cursor">✦</span>继续游戏</button>
@@ -1880,7 +1886,17 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   let kijouNpc = null;
   let gymNpc = null, hunNpc = null, mageNpc = null, tangNpc = null, taftiNpc = null;
   let tangStage = 0;
-  function prog() { if (!cfg.prog) cfg.prog = { tangMet: false, bosses: {}, eliEnding: false, taftiMet: false, shopEli: false }; return cfg.prog; }
+  function prog() {
+    // 老存档里的 cfg.prog 可能缺字段（bosses/shopEli…），这里统一补齐，避免读 undefined.xxx 崩掉
+    if (!cfg.prog || typeof cfg.prog !== 'object') cfg.prog = {};
+    const p0 = cfg.prog;
+    if (!p0.bosses || typeof p0.bosses !== 'object') p0.bosses = {};
+    if (p0.tangMet == null) p0.tangMet = false;
+    if (p0.eliEnding == null) p0.eliEnding = false;
+    if (p0.taftiMet == null) p0.taftiMet = false;
+    if (p0.shopEli == null) p0.shopEli = false;
+    return p0;
+  }
   let gymStage = 0;       // 0 = 还没见过，1 = 已认识（可反复升级）
   let hunDone = false;    // 混的入每个小关只能谈一次
   let kijouStage = 0;      // 0=初次(1-2) 1=已见第二次 2=已见第二次剧情 3=已见4-2第三段
