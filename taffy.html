@@ -445,6 +445,21 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
 #shopList .shop-row .sr-desc{font-size:10px;line-height:1.3;max-height:4.1em;overflow:hidden;}
 #shopList .shop-row .btn{width:100%;padding:6px 0;font-size:11px;}
 
+/* 风场 / 重击：和生生不息同一套技能键样式，兜底定位在右下（applyLayout 会再覆盖） */
+#windBtn,#heavyBtn{position:absolute;right:calc(104px + env(safe-area-inset-right));bottom:calc(210px + env(safe-area-inset-bottom));
+  width:74px;height:74px;border-radius:50%;border:2px solid rgba(150,215,255,.85);
+  background:radial-gradient(circle at 35% 30%,rgba(190,235,255,.95),rgba(40,120,200,.92));
+  color:#0af;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;letter-spacing:1px;box-shadow:0 0 16px rgba(110,190,255,.45);z-index:6}
+#heavyBtn{bottom:calc(292px + env(safe-area-inset-bottom));border-color:rgba(255,205,120,.9);
+  background:radial-gradient(circle at 35% 30%,rgba(255,225,160,.95),rgba(190,110,30,.92));
+  color:#b60;box-shadow:0 0 16px rgba(255,190,90,.45)}
+#windBtn .lf-icon,#heavyBtn .lf-icon{font-size:24px;line-height:1}
+#windBtn:active,#heavyBtn:active{transform:scale(.94)}
+#windBtn.cool,#heavyBtn.cool{opacity:.45}
+#windBtn .tk-txt,#heavyBtn .tk-txt{font-size:10px;color:#eaf6ff;text-shadow:0 1px 3px #000}
+#windBtn .cd,#heavyBtn .cd{position:absolute;font-size:14px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000}
+
 </style>
 </head>
 <body>
@@ -4606,9 +4621,11 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       if (left > 0) { db.classList.add('cool'); $('#dodgeCd').textContent = Math.ceil(left / 1000) + 's'; }
       else { db.classList.remove('cool'); $('#dodgeCd').textContent = ''; }
     }
+    let needLayout = false;
     const lb = $('#leafBtn');
     if (lb) {
       if (P.hasLeaf) {
+        if (lb.classList.contains('hidden')) needLayout = true;
         lb.classList.remove('hidden');
         const left = Math.max(0, (P.leafCd || 0) - now());
         if (left > 0) { lb.classList.add('cool'); $('#leafCd').textContent = Math.ceil(left / 1000) + 's'; }
@@ -4618,6 +4635,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     const wbn = $('#windBtn');
     if (wbn) {
       if (P.hasWind) {
+        if (wbn.classList.contains('hidden')) needLayout = true;
         wbn.classList.remove('hidden');
         const left = Math.max(0, (P.windCd || 0) - now());
         if (left > 0) { wbn.classList.add('cool'); $('#windCd').textContent = Math.ceil(left / 1000) + 's'; }
@@ -4627,12 +4645,14 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     const hbn = $('#heavyBtn');
     if (hbn) {
       if (P.hasHeavy) {
+        if (hbn.classList.contains('hidden')) needLayout = true;
         hbn.classList.remove('hidden');
         const left = Math.max(0, (P.heavyCd || 0) - now());
         if (left > 0) { hbn.classList.add('cool'); $('#heavyCd').textContent = Math.ceil(left / 1000) + 's'; }
         else { hbn.classList.remove('cool'); $('#heavyCd').textContent = ''; }
       } else hbn.classList.add('hidden');
     }
+    if (needLayout) applyLayout();
     refreshFloorTag();
     const lv = $('#lvTag');
     if (lv) lv.textContent = 'Lv.' + Math.max(1, P.gymLv || 1);
@@ -4769,6 +4789,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
 
   function applyLayout() {
     const { w, h } = appSize();
+    if (!(w > 80 && h > 80)) return;   // 容器尺寸还没算好时别把按钮写成 (0,0)
     for (const k in LAYOUT_EL) {
       const el = $(LAYOUT_EL[k]);
       const p = (cfg.layout && cfg.layout[k]) || LAYOUT_DEF[k];
@@ -4806,6 +4827,9 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       { k: 'tp', label: '传送' }
     ];
     if (P.hasLeaf) list.push({ k: 'leaf', label: '生生不息' });
+    if (P.hasWind) list.push({ k: 'wind', label: '风场' });
+    if (P.hasHeavy) list.push({ k: 'heavy', label: '重击' });
+    if (P.zyCores > 0) list.push({ k: 'core', label: '投掷核心' });
     return list;
   }
   let editSel = 'atk';
@@ -4828,7 +4852,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       d.className = 'ed-dot' + (k === editSel ? ' sel' : '');
       d.setAttribute('data-k', k);
       d.textContent = label;
-      d.dataset.sel = '1';
+      d.setAttribute('data-sel', '1');
       d.style.left = (p.x * w) + 'px';
       d.style.top = (p.y * h) + 'px';
       d.style.transform = 'translate(-50%,-50%) scale(' + p.s + ')';
