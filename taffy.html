@@ -480,7 +480,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     <div class="title-wrap">
       <h1 class="game-title">塔菲历险记</h1>
       <p class="game-sub">TAFI'S ADVENTURE</p>
-      <p class="game-ver" id="gameVer">v0.5.6</p>
+      <p class="game-ver" id="gameVer">v0.5.7</p>
       <nav class="menu" id="menu">
         <button class="menu-item" data-menu="new"><span class="cursor">✦</span>新游戏</button>
         <button class="menu-item" data-menu="cont"><span class="cursor">✦</span>继续游戏</button>
@@ -1798,6 +1798,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     name: '塔菲', cls: 'knight', weapon: null,
     hp: 100, maxHp: 100, mp: 100, maxMp: 100,
     gymLv: 1,
+    unlocks: {},     // 技能解锁（本局存档专属）
     hasLeaf: true, leafCd: 0, leaves: [], burnT: 0, burnSrc: 0, burnTick: 0,
     hasWind: true, windCd: 0, windFields: [], hasHeavy: true, heavyCd: 0, heavyLeap: null,
     baseAtk: 5, atkBonus: 0, spdBonus: 0,
@@ -1937,16 +1938,18 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     if (!cfg.prog.kills) cfg.prog.kills = {};
     return cfg.prog;
   }
-  function skillUnlocked(k) { return !!prog0().unlocks[k]; }
-  // 老存档补偿：修好「击败 BOSS 却拿不到技能」之前存的档，这里按进度自动补解锁
+  // 技能解锁跟着「本局存档」走（P.unlocks），不是全局账号进度：开新档就是全新的封印状态
+  function skillUnlocked(k) { return !!(P.unlocks && P.unlocks[k]); }
+  // 只有「老存档」（没有 unlocks 字段）才补偿：按全局进度补齐一次，之后跟着存档走
   function migrateUnlocks() {
+    if (!P.unlocks || typeof P.unlocks !== 'object') P.unlocks = {};
     const p0 = prog0();
+    if (!p0.unlocks) p0.unlocks = {};
     const kills = p0.kills || {};
     const cleared = (p0.maxFloor || floorNo || 1) > 5 || p0.eliEnding || p0.grudgeEnding;
-    if (!p0.unlocks.leaf && (kills.lief || cleared)) p0.unlocks.leaf = true;
-    if (!p0.unlocks.wind && (kills.zhongyan || cleared)) p0.unlocks.wind = true;
-    if (!p0.unlocks.heavy && (kills.elizabeth || cleared)) p0.unlocks.heavy = true;
-    saveCfg();
+    if (!P.unlocks.leaf && (kills.lief || cleared)) P.unlocks.leaf = true;
+    if (!P.unlocks.wind && (kills.zhongyan || cleared)) P.unlocks.wind = true;
+    if (!P.unlocks.heavy && (kills.elizabeth || cleared)) P.unlocks.heavy = true;
   }
   function skillCost(k) {
     if (!skillUnlocked(k)) return SEALED_COST;
@@ -1954,7 +1957,8 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   }
   function unlockSkill(k) {
     if (skillUnlocked(k)) return false;
-    prog0().unlocks[k] = true; saveCfg();
+    if (!P.unlocks) P.unlocks = {};
+    P.unlocks[k] = true;
     return true;
   }
   const DODGE = { cd: 5000, mp: 10, dur: 0.2, speed: 660 };
@@ -2131,7 +2135,6 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   }
 
   function enterLevel(f, s) {
-    migrateUnlocks();
     floorNo = f; subNo = s;
     if (f > (prog0().maxFloor || 1)) { prog0().maxFloor = f; saveCfg(); }
     World.buildFloor(1103 + f * 977 + s * 131, f);
@@ -4257,6 +4260,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     kijouStage = 0; meetKijou = false;
     P.upLv = { sword: 0, bow: 0, staff: 0 };
     P.wlv = 0;
+    P.unlocks = {};
     P.gymLv = 1; gymStage = 0;
     P.money = 0;
     P.cdEnd = 0; P.charging = false; P.chargeF = 0;
@@ -4774,7 +4778,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       v: 2,
       name: P.name, cls: P.cls, wkey: P.weapon.key,
       hp: Math.round(P.hp), mp: Math.round(P.mp),
-      money: P.money, buffs: P.buffs, upLv: P.upLv, wlv: P.wlv || 0, gymLv: P.gymLv || 1,
+      money: P.money, buffs: P.buffs, upLv: P.upLv, wlv: P.wlv || 0, gymLv: P.gymLv || 1, unlocks: P.unlocks || {},
       hasLeaf: !!P.hasLeaf, hasWind: !!P.hasWind, hasHeavy: !!P.hasHeavy, tangStage: tangStage || 0,
       mode: mode, floor: floorNo, sub: subNo, t: Date.now(),
       meetKijou: meetKijou, kijouStage: kijouStage
@@ -4795,9 +4799,10 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       P.upLv = Object.assign({ sword: 0, bow: 0, staff: 0 }, d.upLv || {});
       P.wlv = typeof d.wlv === 'number' ? d.wlv : Math.max(P.upLv.sword || 0, P.upLv.bow || 0, P.upLv.staff || 0);
       P.gymLv = Math.max(1, d.gymLv || 1);
+      P.unlocks = (d.unlocks && typeof d.unlocks === 'object') ? Object.assign({}, d.unlocks) : null;   // null = 老存档，稍后补偿
       gymStage = P.gymLv > 1 ? 1 : 0;
       P.money = d.money || 0;
-      migrateUnlocks();
+      if (P.unlocks == null) { P.unlocks = {}; migrateUnlocks(); }   // 老存档才按进度补一次
       P.hasLeaf = true; P.hasWind = true; P.hasHeavy = true;   // 技能常驻显示，是否可用看 prog.unlocks
       tangStage = d.tangStage || 0;
       // 先清掉运行时字段，再从 buffs 重算派生数值（否则读档后吸血/攻速/三连发等是空壳）
@@ -8128,7 +8133,6 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
 
   /* ================= 启动 ================= */
   function boot() {
-    try { migrateUnlocks(); } catch (e) {}
     bind();
     const fadeEl = $('#fade');
     if (fadeEl) fadeEl.style.opacity = '0';
