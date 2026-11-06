@@ -427,6 +427,24 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   background:rgba(120,20,30,.72);border:calc(var(--k,1)*1.5px) solid rgba(255,120,120,.55);
   color:#ffd0d0;font-size:calc(var(--k,1)*13px);font-weight:700}
 
+/* 面板可滚动主体（长内容不再把按钮顶出屏幕） */
+.panel-body{flex:1 1 auto;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding-right:2px;}
+.panel-body>.inv-list{flex:none;}
+#setPanel .pause-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+#setPanel .pause-list .vol{grid-column:1 / -1;}
+#setPanel .pause-list .btn{width:100%;font-size:12px;padding:9px 4px;}
+#statsPanel .stat-head{flex:none;}
+
+/* 商店：三件商品同屏（三列卡片） */
+#shopList{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;flex:none;}
+#shopList .shop-row{flex-direction:column;align-items:stretch;gap:6px;margin-bottom:0;padding:8px 8px 10px;text-align:center;}
+#shopList .shop-row .sr-ic{width:100%;height:auto;font-size:22px;justify-content:center;}
+#shopList .shop-row .sr-main{text-align:center;flex:none;}
+#shopList .shop-row .sr-nm{font-size:12px;}
+#shopList .shop-row .sr-tag{display:block;margin-left:0;margin-top:2px;font-size:9px;}
+#shopList .shop-row .sr-desc{font-size:10px;line-height:1.3;max-height:4.1em;overflow:hidden;}
+#shopList .shop-row .btn{width:100%;padding:6px 0;font-size:11px;}
+
 </style>
 </head>
 <body>
@@ -564,7 +582,9 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   <div id="statsPanel" class="panel hidden">
     <div class="panel-box">
       <h2 class="panel-title">勇 者 手 记</h2>
+      <button class="panel-x" id="statsX">✕</button>
       <p class="panel-sub">STATUS</p>
+      <div class="panel-body">
       <div class="stat-head">
         <img src="data:image/webp;base64,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" alt="">
         <div>
@@ -575,6 +595,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       <div class="stat-grid" id="statGrid"></div>
       <div class="inv-title">增益</div>
       <div class="inv-list" id="buffList"></div>
+      </div>
       <div class="btn-row"><button class="btn" id="statsClose">关 闭</button></div>
     </div>
   </div>
@@ -626,7 +647,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       <div class="up-body">
         <div class="up-wname" id="upWeapon">村好剑</div>
         <div class="up-lv">强化等级 <b id="upLv">0</b></div>
-        <div class="up-gain">每级 +5 攻击 · +1% 攻速</div>
+        <div class="up-gain" id="upGain">每级 +5 攻击 · +1% 攻速 · +1% 增伤 · +1% 暴击</div>
         <div class="up-cur" id="upCur"></div>
       </div>
       <div class="btn-row"><button class="btn gold" id="upBtn">强化 55 奶蛋</button><button class="btn" id="upClose">离 开</button></div>
@@ -659,7 +680,9 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   <div id="setPanel" class="panel hidden">
     <div class="panel-box" style="width:min(420px,92vw)">
       <h2 class="panel-title">设 置</h2>
+      <button class="panel-x" id="setX">✕</button>
       <p class="panel-sub">SETTINGS</p>
+      <div class="panel-body">
       <div class="pause-list">
         <button class="btn ghost" id="musicTog2">背景音乐：开</button>
         <button class="btn ghost" id="musicSwap2">切换音乐（当前：BGM）</button>
@@ -667,8 +690,9 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
           <span class="slider-note">音量</span>
           <input type="range" id="volSlider2" min="0" max="100" value="50">
         </div>
-        <button class="btn" id="setTitleClose">关 闭</button>
       </div>
+      </div>
+      <div class="btn-row"><button class="btn" id="setTitleClose">关 闭</button></div>
     </div>
   </div>
 
@@ -1753,8 +1777,8 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     name: '塔菲', cls: 'knight', weapon: null,
     hp: 100, maxHp: 100, mp: 100, maxMp: 100,
     gymLv: 1,
-    hasLeaf: false, leafCd: 0, leaves: [], burnT: 0, burnSrc: 0, burnTick: 0,
-    hasWind: false, windCd: 0, windFields: [], hasHeavy: false, heavyCd: 0, heavyLeap: null,
+    hasLeaf: true, leafCd: 0, leaves: [], burnT: 0, burnSrc: 0, burnTick: 0,
+    hasWind: true, windCd: 0, windFields: [], hasHeavy: true, heavyCd: 0, heavyLeap: null,
     baseAtk: 5, atkBonus: 0, spdBonus: 0,
     money: 0, buffs: {},
     x: 0, y: 0, faceX: 1, aim: 0,
@@ -1773,7 +1797,8 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     dashHits: {},
     atkSpeed: 0,      // 攻速加成（同时加快蓄力）
     chop: 0,          // 挥剑消弹
-    upLv: { sword: 0, bow: 0, staff: 0 },  // 武器强化等级
+    upLv: { sword: 0, bow: 0, staff: 0 },  // 旧字段（兼容老存档）
+    wlv: 0,           // 武器强化等级：三把武器共享，换职业继承
     lifesteal: 0,     // 旧字段（吸血鬼已改成命中回血）
     vampHits: 0,      // 吸血鬼层数：每次命中敌人回复 N 点生命
     critCh: 0,        // 双倍伤害概率
@@ -1857,7 +1882,8 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   let time = 0;
   let npcArmed = false;
   let gothDone = false;
-  let aimDrag = { active: false, angle: null };
+  let aimDrag = { active: false, angle: null, sx: 0, sy: 0 };
+  let lastDownL = { x: 0, y: 0 };
   let aimGuide = { on: false };
   let bloodPools = [];
   let waves = [];        // 剑气
@@ -1871,6 +1897,23 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   const LEAF_CD = 5000, LEAF_COST = 80, LEAF_LIFE = 2.5;
   const WIND_CD = 5000, WIND_COST = 80, WIND_LIFE = 2.5, WIND_R = 175, WIND_PULL = 320;
   const HEAVY_CD = 6000, HEAVY_R = 96, HEAVY_COST = 80;
+  // 技能封印：开局就有，但魔力消耗是 99999（用不出来），击败对应魔姬后解锁为正常消耗
+  const SEALED_COST = 99999;
+  function prog0() {
+    if (!cfg.prog) cfg.prog = {};
+    if (!cfg.prog.unlocks) cfg.prog.unlocks = {};
+    return cfg.prog;
+  }
+  function skillUnlocked(k) { return !!prog0().unlocks[k]; }
+  function skillCost(k) {
+    if (!skillUnlocked(k)) return SEALED_COST;
+    return k === 'leaf' ? LEAF_COST : (k === 'wind' ? WIND_COST : HEAVY_COST);
+  }
+  function unlockSkill(k) {
+    if (skillUnlocked(k)) return false;
+    prog0().unlocks[k] = true; saveCfg();
+    return true;
+  }
   const DODGE = { cd: 5000, mp: 10, dur: 0.2, speed: 660 };
   function dodgeCd() {
     const extra = Math.max(0, (P.dodgeMax || 1) - 1);
@@ -2097,13 +2140,16 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       const th = (World.state && World.state.theme) || 'forest';
       const bkey = th === 'desert' ? 'victoria' : (th === 'ice' ? 'longniang' : (th === 'swamp' ? 'zhongyan' : (th === 'castle' ? 'elizabeth' : (th === 'hell' ? 'nailong' : 'lief'))));
       const bd = BOSS_DEFS[bkey];
-      const grow = Math.pow(1.5, Math.max(0, f - 1));
+      const lvB = Math.max(0, f - 1);
+      const growHp = Math.pow(2, lvB);          // 血量：每过一大关翻倍
+      const growAtk = Math.pow(1.7, lvB);       // 攻击：每过一大关 +70%
+      const growTaken = Math.pow(0.5, lvB);     // 减伤：每过一大关再减一半受到伤害
       boss = {
         kind: bkey,
         x: pt ? pt.x : P.x, y: (pt ? pt.y : P.y) - 10,
-        hp: Math.round(bd.hp * grow), maxHp: Math.round(bd.hp * grow),
-        atk: Math.round(bd.atk * grow), r: bd.r, h: bd.h,
-        reduce: bd.reduce,
+        hp: Math.round(bd.hp * growHp), maxHp: Math.round(bd.hp * growHp),
+        atk: Math.round(bd.atk * growAtk), r: bd.r, h: bd.h,
+        reduce: 1 - Math.pow(0.5, Math.max(1, f)), dmgTaken: 1,
         alive: true, engaged: false, talked: false, room: pr,
         stunned: false, stunUntil: 0, lastCast: now() + 1500,
         castIdx: 0, casts: 0, faceX: -1, flash: 0, atkCd: 0,
@@ -2219,12 +2265,15 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     return { x: lx / zoom - vw / 2 + cam.x, y: ly / zoom - vh / 2 + cam.y };
   }
 
+  window.addEventListener('pointerdown', function (e) {
+    lastDownL = toLogical(e.clientX, e.clientY);
+  }, true);
   window.addEventListener('pointermove', function (e) {
     if (!P.charging) return;
     const l = toLogical(e.clientX, e.clientY);
-    const w = screenToWorld(l.x, l.y);
-    const dx = w.x - P.x, dy = w.y - (P.y - 30);
-    if (Math.hypot(dx, dy) > 22) { aimDrag.active = true; aimDrag.angle = Math.atan2(dy, dx); }
+    // 用手指"拖出去的方向"当瞄准方向：手指按在按钮上不动时不会把准心拽到按钮那一侧
+    const dx = l.x - aimDrag.sx, dy = l.y - aimDrag.sy;
+    if (Math.hypot(dx, dy) > 16) { aimDrag.active = true; aimDrag.angle = Math.atan2(dy, dx); }
   });
 
   /* 摇杆 */
@@ -2309,8 +2358,9 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     if (!canAct()) return;
     const t = now();
     if (t < (P.leafCd || 0)) return;
-    if (P.mp < LEAF_COST) { toast('魔力不足'); return; }
-    P.mp -= LEAF_COST;
+    const lcost = skillCost('leaf');
+    if (P.mp < lcost) { toast(skillUnlocked('leaf') ? '魔力不足' : '技能被封印中'); return; }
+    P.mp -= lcost;
     P.leafCd = t + LEAF_CD;
     P.leaves = [{ off: 0, t: 0 }];   // 只有一片 🍀
     for (let i = 0; i < 10; i++) fx.push({ kind: 'spark', x: P.x, y: P.y - 26, vx: rnd(-90, 90), vy: rnd(-140, -20), t: 0, life: rnd(0.2, 0.5) });
@@ -2335,8 +2385,9 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     if (!canAct()) return false;
     const t = now();
     if (t < (P.windCd || 0)) return false;
-    if (P.mp < WIND_COST) { toast('魔力不足'); return false; }
-    P.mp -= WIND_COST;
+    const wcost = skillCost('wind');
+    if (P.mp < wcost) { toast(skillUnlocked('wind') ? '魔力不足' : '技能被封印中'); return false; }
+    P.mp -= wcost;
     P.windCd = t + WIND_CD;
     P.windFields.push({ x: x, y: y, r: WIND_R, t: 0, dur: WIND_LIFE, tick: 0 });
     fx.push({ kind: 'burst', x: x, y: y, t: 0, life: 0.3 });
@@ -2375,8 +2426,9 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     if (!canAct()) return false;
     const t = now();
     if (t < (P.heavyCd || 0)) return false;
-    if (P.mp < HEAVY_COST) { toast('魔力不足'); return false; }
-    P.mp -= HEAVY_COST;
+    const hcost = skillCost('heavy');
+    if (P.mp < hcost) { toast(skillUnlocked('heavy') ? '魔力不足' : '技能被封印中'); return false; }
+    P.mp -= hcost;
     P.heavyCd = t + HEAVY_CD;
     P.heavyLeap = { x: x, y: y, fromX: P.x, fromY: P.y, t: 0, dur: 0.42 };
     return true;
@@ -2417,8 +2469,8 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   /* ---- 技能瞄准（长按拖动 / 点按自动锁定）---- */
   let skillAim = null;
   function beginSkillAim(kind) {
-    if (kind === 'wind' && (!P.hasWind || now() < (P.windCd || 0) || P.mp < WIND_COST)) return;
-    if (kind === 'heavy' && (!P.hasHeavy || now() < (P.heavyCd || 0) || P.mp < HEAVY_COST)) return;
+    if (kind === 'wind' && (!P.hasWind || now() < (P.windCd || 0) || P.mp < skillCost('wind'))) return;
+    if (kind === 'heavy' && (!P.hasHeavy || now() < (P.heavyCd || 0) || P.mp < skillCost('heavy'))) return;
     const en = nearestEnemy(760);
     const tx = en ? en.x : P.x + Math.cos(P.aim || 0) * 130;
     const ty = en ? en.y : P.y + Math.sin(P.aim || 0) * 130;
@@ -2461,29 +2513,30 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     return best;
   }
 
-  function upBonus() {
-    const k = P.weapon && P.weapon.key;
-    return (P.upLv && k && P.upLv[k] ? P.upLv[k] : 0) * 5;
-  }
-  function upSpeed() {
-    const k = P.weapon && P.weapon.key;
-    return (P.upLv && k && P.upLv[k] ? P.upLv[k] : 0) * 0.01;
-  }
+  // 武器强化（共享等级）：每级加成随武器不同，数值在 recalcStats() 里算成 P.upAtk / upSpd / upDmg / upCrit
+  function wlv() { return Math.max(0, P.wlv || 0); }
+  function upBonus() { return P.upAtk || 0; }
+  function upSpeed() { return P.upSpd || 0; }
+  function upCrit() { return P.upCrit || 0; }
 
   // ---- 统一伤害管线：攻击百分比 → 增伤 → 暴击(150%) → 怪物减伤
   function atkValue(extra) {
     const raw = P.baseAtk + P.atkBonus + (extra || 0) + upBonus();
     return Math.round(raw * (1 + (P.atkPct || 0)));
   }
+  // 伤害结算规则（全局）：
+  //   实际倍率 = 1 + 攻击方增伤 − 受击方减伤
+  //   例：你 100% 增伤、怪 80% 减伤 → 1 + 1.0 − 0.8 = 1.2 倍
+  function effMul(bonus, reduce) { return Math.max(0, 1 + (bonus || 0) - (reduce || 0)); }
   function finalDmg(base) {
-    return Math.max(1, Math.round(base * (1 + (P.dmgMul || 0))));
+    return Math.max(1, Math.round(base));
   }
   function weaponCritBase() {
     const w = P.weapon;
     return (w && w.crit) || 0;
   }
   function totalCrit(extra) {
-    return Math.min(1, weaponCritBase() + (P.critBuff || 0) + (P.critCh || 0) + (extra || 0));
+    return Math.min(1, weaponCritBase() + (P.critBuff || 0) + (P.critCh || 0) + (P.upCrit || 0) + (extra || 0));
   }
   const CRIT_MUL = 1.5;
 
@@ -2496,6 +2549,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       if (now() < P.cdEnd) return;
       P.charging = true; P.chargeStart = now(); P.chargeF = 0;
       aimDrag.active = true; aimDrag.angle = null;
+      aimDrag.sx = lastDownL.x; aimDrag.sy = lastDownL.y;
     } else if (w.type === 'staff') {
       if (now() < P.cdEnd) return;
       if (P.mp < w.mp) { toast('魔力不足'); return; }
@@ -2674,8 +2728,8 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       ? Math.min(1, critOverride + (P.critBuff || 0) + (P.critCh || 0))
       : totalCrit(0);
     if (cc > 0 && Math.random() < cc) { dmg *= CRIT_MUL; crit = true; }
-    const red = en.reduce || 0;
-    if (red > 0) dmg = Math.max(1, dmg * (1 - red));
+    const eff = effMul(P.dmgMul, en.reduce);
+    dmg = Math.max(1, Math.round(dmg * eff));
     en.hp -= dmg;
     if (P.vampHits > 0 && P.hp < P.maxHp) {
       P.hp = Math.min(P.maxHp, P.hp + P.vampHits);
@@ -2747,7 +2801,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     }
   }
 
-  function hurtPlayer(dmg, ang) {
+  function hurtPlayer(dmg, ang, enemyBonus) {
     if (now() < P.invUntil || !P.alive) return;
     if (P.leaves && P.leaves.length) {
       P.leaves.pop();
@@ -2756,8 +2810,8 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       fx.push({ kind: 'burst', x: P.x, y: P.y - 30, t: 0, life: 0.3 });
       return;
     }
-    const red = Math.max(0, P.dmgRed || 0);
-    if (red > 0) dmg = Math.max(1, Math.round(dmg * (1 - red)));
+    const eff = effMul(enemyBonus || 0, Math.max(0, P.dmgRed || 0));
+    dmg = Math.round(dmg * eff);
     P.hp -= dmg;
     P.invUntil = now() + 620;
     P.hurtT = 0.3;
@@ -2854,17 +2908,18 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   function spawnEnemy(type, x, y, room) {
     const d = EDEF[type] || EDEF.turtle;
     const lv = lvIndex();
-    const hpMul = Math.pow(1.2, lv), atkMul = Math.pow(1.2, lv), spdMul = Math.pow(1.03, lv);
+    // 成长（每小关）：血量 ×1.2、攻击 ×1.15、移速 ×1.03；增伤与减伤都是固定 +5%（线性、不衰减）
+    const hpMul = Math.pow(1.2, lv), atkMul = Math.pow(1.15, lv), atkAdd = 0, spdMul = Math.pow(1.03, lv);
     // 健身龙光环：全场怪物血攻 +20%（不叠加，只看场上有没有活着的健身龙）
     const fitOn = fitnessOn();
     const aura = fitOn ? 1.2 : 1;
     const baseHp = Math.round(d.hp * hpMul * aura);
-    const baseAtk = Math.round(d.atk * atkMul * aura);
+    const baseAtk = Math.round((d.atk * atkMul + atkAdd) * aura);
     enemies.push({
       id: ++enemySeq,
       type: type, def: d, hp: baseHp, maxHp: baseHp, atk: baseAtk, atkCd: d.cd, speed: d.speed * spdMul,
       range: d.range, h: d.h, r: d.r, x: x, y: y, alive: true, room: room ? room.id : -1,
-      reduce: waveReduceOf(lv), dmgMul: Math.pow(1.03, lv),
+      reduce: 0.05 * lv, dmgMul: 1 + 0.05 * lv,
       nextAtk: 0, flash: 0, kx: 0, ky: 0, kt: 0, faceX: 1, bob: rnd(0, TAU), spawnT: 0.35
     });
     if (d.fitnessAura) fitnessScale(1.2);
@@ -3162,7 +3217,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
             e.alive = false;
             fx.push({ kind: 'burst', x: e.x, y: e.y - e.h * 0.5, t: 0, life: 0.5 });
             for (let i = 0; i < 14; i++) fx.push({ kind: 'spark', x: e.x, y: e.y - e.h * 0.5, vx: rnd(-200, 200), vy: rnd(-220, 40), t: 0, life: rnd(0.3, 0.6) });
-            if (dist(P.x, P.y, e.x, e.y) < 92) hurtPlayer(e.atk, Math.atan2(P.y - e.y, P.x - e.x));
+            if (dist(P.x, P.y, e.x, e.y) < 92) hurtPlayer(e.atk, Math.atan2(P.y - e.y, P.x - e.x), (e.dmgMul || 1) - 1);
             shakeT = Math.max(shakeT, 0.25);
             continue;
           }
@@ -3207,7 +3262,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
           });
           fx.push({ kind: 'muzzle', x: e.x, y: e.y - e.h * 0.7, t: 0, life: 0.15 });
         } else {
-          hurtPlayer(Math.round(e.atk * (e.dmgMul || 1)), ang);
+          hurtPlayer(e.atk, ang, (e.dmgMul || 1) - 1);
           if (e.stealMax) { grudgeSteal(); spawnGrudgeClone(); }
           fx.push({ kind: 'hit', x: P.x, y: P.y - 40, t: 0, life: 0.2 });
         }
@@ -3601,7 +3656,8 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   function kijouName() { return floorNo > 5 ? '终焉姬' : '机娘'; }
   function talkKijou() {
     if (typeof __KDBG !== 'undefined') __KDBG.push('enter stage=' + kijouStage + ' f=' + floorNo + ' s=' + subNo + ' busy=' + kijouBusy + ' dg=' + dg.active);
-    if (kijouBusy || dg.active) return;
+    if (dg.active) return;
+    if (kijouBusy) { kijouBusy = false; }   // 上一次对话/面板没正常收尾，强制复位
     kijouBusy = true;
     if (kijouStage === 0 && floorNo === 1 && subNo === 2) {
       playLines([
@@ -3649,7 +3705,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     } else {
       playLines([
         { who: kijouName(), portrait: 'kijou', text: floorNo > 5 ? '还需要我做什么？' : '遇到困难了吗？' }
-      ], () => { openUpgrade(() => { kijouBusy = false; }); });
+      ], () => { kijouBusy = false; openUpgrade(); });
     }
   }
 
@@ -3657,19 +3713,22 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   const GYM_PRICE = 50;
   function talkGym() {
     if (dg.active || modalOpen()) return;
+    const G = gymNpc || {};
+    const gName = G.who || '健身龙';
+    const gPic = G.skin || 'gym';
     if (gymStage === 0) {
       playLines([
         { who: P.name, portrait: 'tafi', text: '你知道有关魔姬的事情吗？' },
-        { who: '健身龙', portrait: 'gym', text: '魔姬？你是说"森之魔姬——莉耶芙"吗？' },
+        { who: gName, portrait: gPic, text: '魔姬？你是说"森之魔姬——莉耶芙"吗？' },
         { who: P.name, portrait: 'tafi', text: '可以告诉我有关她的事吗？' },
-        { who: '健身龙', portrait: 'gym', text: '当然，那家伙可是统治者森林的邪恶魔姬，强大万分！' },
-        { who: '健身龙', portrait: 'gym', text: '什么？你打算去击败魔姬！？' },
-        { who: '健身龙', portrait: 'gym', text: '好吧，既然如此我也来祝你一臂之力吧！' }
+        { who: gName, portrait: gPic, text: '当然，那家伙可是统治者森林的邪恶魔姬，强大万分！' },
+        { who: gName, portrait: gPic, text: '什么？你打算去击败魔姬！？' },
+        { who: gName, portrait: gPic, text: '好吧，既然如此我也来祝你一臂之力吧！' }
       ], () => { gymStage = 1; openGym(); });
     } else {
       playLines([
-        { who: '健身龙', portrait: 'gym', text: '你来了？' },
-        { who: '健身龙', portrait: 'gym', text: '怎么样？还要继续提升自身吗？' }
+        { who: gName, portrait: gPic, text: '你来了？' },
+        { who: gName, portrait: gPic, text: '怎么样？还要继续提升自身吗？' }
       ], openGym);
     }
   }
@@ -3753,7 +3812,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
         : { who: '法师强', portrait: 'mage', text: '勇者呦，让我来祝你一臂之力吧！' }
     ], () => {
       const cost = Math.floor(P.money * 0.1);
-      showChoice('法师强的法球在指间打转。', [
+      showChoice((late ? '龙娘' : '法师强') + '的法球在指间打转。', [
         {
           text: '① 重洗全部增益（花 ' + cost + ' 奶蛋）',
           gold: true,
@@ -3786,7 +3845,8 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   }
 
   function tangOptions() {
-    showChoice('唐包：要来玩游戏吗？', [
+    const who = (tangNpc && tangNpc.who) || '唐包';
+    showChoice(who + '：要来玩游戏吗？', [
       { text: '① 猜拳（50 奶蛋）', gold: true, cb: () => { tangPlay(); } },
       { text: '② 不了', cb: () => { /* 不消失，随时再来 */ } }
     ]);
@@ -3799,8 +3859,8 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       tangStage = 1; prog().tangMet = true; saveCfg();
       const lines = pic === 'lief' ? [
         { who: who, portrait: pic, text: '……' },
-        { who: who, portrait: pic, text: '…你知道吗…魔姬其实有五个…' },
-        { who: P.name, portrait: 'tafi', text: '你在说什么？' },
+        { who: who, portrait: pic, text: '…你还活着啊…' },
+        { who: P.name, portrait: 'tafi', text: '怎么，很意外吗？' },
         { who: who, portrait: pic, text: '…没什么' }
       ] : [
         { who: who, portrait: pic, text: '……' },
@@ -3868,12 +3928,19 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   function renderUpgrade() {
     const w = P.weapon || WEAPONS.sword;
     const k = w.key;
-    const lv = (P.upLv && P.upLv[k]) || 0;
+    const lv = wlv();
     const set = (sel, v) => { const el = $(sel); if (el) el.textContent = v; };
     set('#upWeapon', w.name);
     set('#upLv', String(lv));
     set('#upMoney', String(P.money));
-    set('#upCur', '当前攻击 ' + (P.baseAtk + P.atkBonus + (w.dmg || w.dmgMax) + lv * 5));
+    set('#upCur', '当前攻击 ' + atkValue(w.dmg || w.dmgMax) + ' · 暴击 ' + Math.round(totalCrit(0) * 100) + '%');
+    const g = $('#upGain');
+    if (g) {
+      g.textContent = w.type === 'sword' ? '每级 +5 攻击 · +1% 攻速 · +1% 增伤 · +1% 暴击'
+        : (w.type === 'bow' ? '每级 +5 攻击 · +1% 增伤'
+          : '每级 +6 攻击 · +1% 增伤 · +1.5% 攻速 · +1% 暴击');
+      if ((P.upCrit || 0) <= 0 && wlv() > 0 && (w.type === 'sword' || w.type === 'staff')) g.textContent += '（暴击已满 100%，暴击换成攻击）';
+    }
     const b = $('#upBtn');
     if (b) {
       b.textContent = '强化 ' + UP_PRICE + ' 奶蛋';
@@ -3883,12 +3950,12 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   }
   function doUpgrade() {
     if (P.money < UP_PRICE) { toast('奶蛋不够'); return; }
-    const k = P.weapon.key;
     P.money -= UP_PRICE;
-    P.upLv[k] = (P.upLv[k] || 0) + 1;
+    P.wlv = wlv() + 1;
+    recalcStats();
     renderUpgrade();
     updateHUD();
-    toast('强化成功！' + P.weapon.name + ' +' + P.upLv[k]);
+    toast('强化成功！' + P.weapon.name + ' +' + wlv());
   }
   function closeUpgrade() {
     hideModal('#upPanel');
@@ -4010,32 +4077,32 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   const VULN_BONUS = 1.0;   // 虚弱/瘫痪时额外承受的伤害比例（+100%，即两倍伤害）
   const BOSS_DEFS = {
     lief: {
-      key: 'lief', name: '森之魔姬 · 莉耶芙', img: 'lief', hp: 5000, atk: 40, h: 118, r: 34,
-      reduce: 0, castGap: 7000
+      key: 'lief', name: '森之魔姬 · 莉耶芙', img: 'lief', hp: 5000, atk: 50, h: 118, r: 34,
+      reduce: 0.5, castGap: 7000
     },
     victoria: {
-      key: 'victoria', name: '烈阳姬 · 维多利亚', img: 'victoria', hp: 5000, atk: 40, h: 170, r: 40,
-      reduce: 0, castGap: 6000
+      key: 'victoria', name: '烈阳姬 · 维多利亚', img: 'victoria', hp: 5000, atk: 50, h: 170, r: 40,
+      reduce: 0.5, castGap: 6000
     },
     longniang: {
-      key: 'longniang', name: '冰雪姬 · 龙娘', img: 'longniang', hp: 5000, atk: 40, h: 178, r: 42,
-      reduce: 0, castGap: 6500
+      key: 'longniang', name: '冰雪姬 · 龙娘', img: 'longniang', hp: 5000, atk: 50, h: 178, r: 42,
+      reduce: 0.5, castGap: 6500
     },
     nailong: {
-      key: 'nailong', name: '奶龙', img: 'nailong', hp: 5000, atk: 40, h: 168, r: 40,
-      reduce: 0, castGap: 4200
+      key: 'nailong', name: '奶龙', img: 'nailong', hp: 5000, atk: 50, h: 168, r: 40,
+      reduce: 0.5, castGap: 4200
     },
     grudge: {
-      key: 'grudge', name: '怨念集合体', img: 'grudge', hp: 5000, atk: 40, h: 205, r: 56,
-      reduce: 0, castGap: 3600
+      key: 'grudge', name: '怨念集合体', img: 'grudge', hp: 5000, atk: 50, h: 205, r: 56,
+      reduce: 0.5, castGap: 3600
     },
     elizabeth: {
-      key: 'elizabeth', name: '魔王 · 伊丽莎白', img: 'elizabeth', hp: 5000, atk: 40, h: 190, r: 40,
-      reduce: 0, castGap: 5200
+      key: 'elizabeth', name: '魔王 · 伊丽莎白', img: 'elizabeth', hp: 5000, atk: 50, h: 190, r: 40,
+      reduce: 0.5, castGap: 5200
     },
     zhongyan: {
-      key: 'zhongyan', name: '沼泽之魔姬 · 终焉姬', img: 'kijou', hp: 5000, atk: 40, h: 150, r: 40,
-      reduce: 0, castGap: 7000
+      key: 'zhongyan', name: '沼泽之魔姬 · 终焉姬', img: 'kijou', hp: 5000, atk: 50, h: 150, r: 40,
+      reduce: 0.5, castGap: 7000
     }
   };
   const BOSS_LINES = [
@@ -4140,6 +4207,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     P.zyCores = 0;
     kijouStage = 0; meetKijou = false;
     P.upLv = { sword: 0, bow: 0, staff: 0 };
+    P.wlv = 0;
     P.gymLv = 1; gymStage = 0;
     P.money = 0;
     P.cdEnd = 0; P.charging = false; P.chargeF = 0;
@@ -4332,7 +4400,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     return st;
   }
   // 同一家店刷新价格 30 → 60 → 90 …（换一家店重新从 30 开始）
-  function refreshCost(st) { return REFRESH_BASE; }   // 固定 30，不再递增
+  function refreshCost(st) { return REFRESH_BASE * ((st.refresh || 0) + 1); }   // 30、60、90…
 
   function rollOffers() {
     const critNow = Math.min(1, totalCrit(0));
@@ -4387,18 +4455,29 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     const b = P.buffs || {};
     const w = P.weapon || {};
     P.baseAtk = 5;
-    P.hasLeaf = false; P.leafCd = 0; P.leaves = []; P.burnT = 0;
-    P.hasWind = false; P.windCd = 0; P.windFields = []; P.hasHeavy = false; P.heavyCd = 0; P.heavyLeap = null;
+    P.hasLeaf = true; P.leafCd = 0; P.leaves = []; P.burnT = 0;
+    P.hasWind = true; P.windCd = 0; P.windFields = []; P.hasHeavy = true; P.heavyCd = 0; P.heavyLeap = null;
     tangStage = 0;
     const gymLv = Math.max(1, P.gymLv || 1);
+    // ---- 武器强化（共享等级）：剑 +5攻/1%攻速/1%增伤/1%暴击，弓 +5攻/1%增伤，杖 +6攻/1%增伤/1.5%攻速/1%暴击
+    const L = Math.max(0, P.wlv || 0);
+    let uAtk = 0, uSpd = 0, uDmg = 0, uCrit = 0;
+    if (L > 0) {
+      if (w.type === 'sword') { uAtk = 5 * L; uSpd = 0.01 * L; uDmg = 0.01 * L; uCrit = 0.01 * L; }
+      else if (w.type === 'bow') { uAtk = 5 * L; uDmg = 0.01 * L; }
+      else if (w.type === 'staff') { uAtk = 6 * L; uSpd = 0.015 * L; uDmg = 0.01 * L; uCrit = 0.01 * L; }
+    }
+    const critNoUp = ((w.crit || 0) + (b.crit || 0) * 0.02 + (b.gamble || 0) * 0.10);
+    if (uCrit > 0 && critNoUp + uCrit >= 1 - 1e-9) { uAtk += Math.round(uCrit * 100); uCrit = 0; }  // 暴击满了，+1%暴击改成 +1攻击
+    P.upAtk = uAtk; P.upSpd = uSpd; P.upDmg = uDmg; P.upCrit = uCrit;
     P.atkBonus = (b.atk || 0) * 5 + (gymLv - 1) * 5;
     P.atkPct = (b.atk2 || 0) * 0.05;                 // 攻击Ⅱ：按总攻击力百分比
-    P.dmgMul = (b.dmgup || 0) * 0.10 + (b.dmgup2 || 0) * 0.25;   // 增伤
+    P.dmgMul = (b.dmgup || 0) * 0.10 + (b.dmgup2 || 0) * 0.25 + (P.upDmg || 0);   // 增伤（含武器强化）
     P.dmgRed = (b.dmgred || 0) * 0.10 + (b.dmgred2 || 0) * 0.25 + (w.type === 'sword' ? (w.dmgRed || 0) : 0);
     P.maxHp = Math.round((100 + (b.hp || 0) * 10 + (gymLv - 1) * 5) * (1 + (b.hp2 || 0) * 0.05));
     P.maxMp = 100 + (b.mp || 0) * 10 + (w.type === 'staff' ? (w.mpBonus || 0) : 0);
     P.spdBonus = (b.spd || 0) * 0.05;
-    P.atkSpeed = (b.as || 0) * 0.05;
+    P.atkSpeed = (b.as || 0) * 0.05 + (P.upSpd || 0);
     P.mpRegen = (b.mpr || 0) * 0.05;
     P.vampHits = (b.vamp || 0);
     P.critCh = (b.gamble || 0) * 0.10;
@@ -4416,6 +4495,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   }
 
   function openShop() {
+    if (dg.active) { dg.active = false; dg.onEnd = null; const dl = $('#dialog'); if (dl) dl.classList.add('hidden'); }
     hideModal('#shopAllPanel');
     paused = true;
     const room = World.roomAt(P.x, P.y);
@@ -4585,7 +4665,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
         ['奶蛋', String(P.money)],
         ['闪避次数', String(P.dodgeMax)],
         ['贤者之石', String(P.revives || 0)],
-        ['武器强化', '+' + ((P.upLv && P.weapon && P.upLv[P.weapon.key]) || 0)],
+        ['武器强化', '+' + wlv()],
         ['角色等级', 'Lv.' + Math.max(1, P.gymLv || 1) + (P.gymLv > 1 ? '（生命 +' + (P.gymLv - 1) * 5 + ' · 攻击 +' + (P.gymLv - 1) * 5 + '）' : '')],
         ['所在', mode === 'village' ? '奶龙小镇' : floorTag]
       ];
@@ -4640,7 +4720,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       v: 2,
       name: P.name, cls: P.cls, wkey: P.weapon.key,
       hp: Math.round(P.hp), mp: Math.round(P.mp),
-      money: P.money, buffs: P.buffs, upLv: P.upLv, gymLv: P.gymLv || 1,
+      money: P.money, buffs: P.buffs, upLv: P.upLv, wlv: P.wlv || 0, gymLv: P.gymLv || 1,
       hasLeaf: !!P.hasLeaf, hasWind: !!P.hasWind, hasHeavy: !!P.hasHeavy, tangStage: tangStage || 0,
       mode: mode, floor: floorNo, sub: subNo, t: Date.now(),
       meetKijou: meetKijou, kijouStage: kijouStage
@@ -4659,6 +4739,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       P.weapon = Object.assign({}, WEAPONS[d.wkey || (CLASSES[P.cls] && CLASSES[P.cls].weapon) || 'sword']);
       P.buffs = d.buffs || {};
       P.upLv = Object.assign({ sword: 0, bow: 0, staff: 0 }, d.upLv || {});
+      P.wlv = typeof d.wlv === 'number' ? d.wlv : Math.max(P.upLv.sword || 0, P.upLv.bow || 0, P.upLv.staff || 0);
       P.gymLv = Math.max(1, d.gymLv || 1);
       gymStage = P.gymLv > 1 ? 1 : 0;
       P.money = d.money || 0;
@@ -6041,7 +6122,7 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
     // 魔姬常态无条件减伤：直接砍一半伤害，和增伤互相独立。
     // 虚弱/瘫痪时：减伤整个失效，并且再乘 1.3（100 伤 → 130，而不是 100×0.5×1.3=65）
     const vuln = t < (boss.vulnUntil || 0) || boss.stunned;
-    const mul = vuln ? (1 + VULN_BONUS) : (1 - (boss.reduce || 0));
+    const mul = vuln ? (1 + VULN_BONUS + (P.dmgMul || 0)) : effMul(P.dmgMul, boss.reduce);
     const real = dmg * mul;
     boss.hp -= real;
     boss.flash = 0.16;
@@ -6115,10 +6196,13 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
   function spawnGrudgeBoss() {
     const def = BOSS_DEFS.grudge;
     if (!grudgeBaseMaxHp) grudgeBaseMaxHp = P.maxHp;
-    const grow = Math.pow(1.5, Math.max(0, floorNo - 1));
+    const lvB2 = Math.max(0, floorNo - 1);
+    const grow = Math.pow(2, lvB2);
     boss = {
       kind: 'grudge', name: def.name, def, x: boss ? boss.x : 600, y: boss ? boss.y : 300,
-      hp: Math.round(def.hp * grow), maxHp: Math.round(def.hp * grow), atk: Math.round(def.atk * grow),
+      hp: Math.round(def.hp * grow), maxHp: Math.round(def.hp * grow),
+      atk: Math.round(def.atk * Math.pow(1.7, lvB2)),
+      reduce: 1 - Math.pow(0.5, Math.max(1, floorNo)), dmgTaken: 1,
       h: def.h, r: def.r, alive: true, engaged: true, talked: true, castIdx: 0,
       lastCast: now() + 1600, basicCd: now() + 1200, reduce: def.reduce || 0, room: boss ? boss.room : null,
       faceX: -1, stunned: false, stunUntil: 0, vulnUntil: 0, charging: false, chargeHp: 0
@@ -6278,11 +6362,11 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       }, 700);
       return;
     }
-    if (kind === 'zhongyan') { P.hasWind = true; toast('习得技能：风场 🌪'); }
-    if (kind === 'elizabeth') { P.hasHeavy = true; toast('习得技能：重击 💥'); }
-    if (kind === 'lief' && !P.hasLeaf) {
-      P.hasLeaf = true;
-      toast(nm + '倒下了……你领悟了「生生不息」（+1000 奶蛋）');
+    if (kind === 'zhongyan') { P.hasWind = true; if (unlockSkill('wind')) toast('技能解锁：风场 🌪'); }
+    if (kind === 'elizabeth') { P.hasHeavy = true; if (unlockSkill('heavy')) toast('技能解锁：重击 💥'); }
+    if (kind === 'lief' && !skillUnlocked('leaf')) {
+      P.hasLeaf = true; unlockSkill('leaf');
+      toast(nm + '倒下了……「生生不息」解封（+1000 奶蛋）');
       updateHUD();
     } else {
       toast(nm + '倒下了……传送门开启（+1000 奶蛋）');
@@ -7796,8 +7880,15 @@ body.edit-layout #dodgeBtn.dragging,body.edit-layout #talkBtn.dragging,body.edit
       if (statsPausedBack) { statsPausedBack = false; openPause(); }
       else paused = false;
     });
+    const statsX = $('#statsX');
+    if (statsX) statsX.addEventListener('click', () => {
+      hideModal('#statsPanel');
+      if (statsPausedBack) { statsPausedBack = false; openPause(); } else paused = false;
+    });
     const setBtn = $('#settingsBtn');
     if (setBtn) setBtn.addEventListener('click', togglePause);
+    const setX = $('#setX');
+    if (setX) setX.addEventListener('click', () => { hideModal('#setPanel'); paused = true; openPause(); });
     const shopClose = $('#shopClose');
     if (shopClose) shopClose.addEventListener('click', () => { hideModal('#shopPanel'); paused = false; });
     const shopRefresh = $('#shopRefresh');
